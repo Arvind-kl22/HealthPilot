@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Set Patient Location | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="page-heading split-heading">
+            <div>
+                <span class="section-kicker"><i class="bi bi-crosshair"></i> Patient location</span>
+                <h1>Set Your Location</h1>
+                <p class="text-muted">HealthPilot uses this point for hospital ranking, travel time, and route navigation.</p>
+            </div>
+            <a class="btn btn-outline-primary" href="{{ url_for('patient_dashboard') }}"><i class="bi bi-arrow-right"></i> Continue</a>
+        </div>
+
+        <div class="location-picker-grid">
+            <div class="map-panel">
+                <div id="locationPickerMap" class="map-canvas"></div>
+            </div>
+            <div class="form-shell location-form-shell">
+                <h2>Choose Location</h2>
+                <p class="text-muted">Use precise GPS or click on the map to set your starting point.</p>
+                <div class="location-banner" id="locationPickerStatus">
+                    <i class="bi bi-info-circle"></i>
+                    <span>No location selected yet.</span>
+                </div>
+                <button class="btn btn-primary w-100" type="button" id="useGpsLocation">
+                    <i class="bi bi-crosshair"></i> Use Precise Location
+                </button>
+                <form method="post" class="row g-3 mt-2" id="patientLocationForm">
+                    <input type="hidden" id="locationSource" name="source" value="manual">
+                    <div class="col-md-6">
+                        <label class="form-label" for="latitude">Latitude</label>
+                        <input class="form-control" type="number" step="any" id="latitude" name="latitude" value="{{ patient_location.lat if patient_location else '' }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="longitude">Longitude</label>
+                        <input class="form-control" type="number" step="any" id="longitude" name="longitude" value="{{ patient_location.lng if patient_location else '' }}" required>
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-success w-100" type="submit"><i class="bi bi-check2-circle"></i> Save Location</button>
+                    </div>
+                </form>
+                <div class="disclaimer-box mt-3">
+                    <i class="bi bi-shield-lock"></i>
+                    <span>Your selected location is stored only in this browser session.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+window.HealthPilotLocationPicker = {
+    mapplsEnabled: {{ (mappls_web_api_key|length > 0)|tojson }},
+    defaultCenter: [
+        {{ patient_location.lat if patient_location else 28.6139 }},
+        {{ patient_location.lng if patient_location else 77.2090 }}
+    ],
+    existingLocation: {{ patient_location|tojson }}
+};
+</script>
+{% if mappls_web_api_key %}
+<script src="https://sdk.mappls.com/map/sdk/web?v=3.0&access_token={{ mappls_web_api_key }}"></script>
+{% endif %}
+<script src="{{ url_for('static', filename='js/location.js') }}"></script>
+{% endblock %}

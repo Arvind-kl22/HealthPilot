@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Feedback | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad compact-section">
+    <div class="container">
+        <div class="form-shell wide-form">
+            <span class="section-kicker"><i class="bi bi-chat-square-heart"></i> Visit feedback</span>
+            <h1>{{ appointment.hospital_name }}</h1>
+            <p class="text-muted">{{ appointment.doctor_name }} · {{ appointment.service_name }}</p>
+            <form method="post" class="row g-3">
+                {% for field, label in [('rating', 'Doctor rating'), ('cleanliness_rating', 'Cleanliness'), ('waiting_rating', 'Waiting experience'), ('staff_rating', 'Staff support')] %}
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ field }}">{{ label }}</label>
+                        <select class="form-select" id="{{ field }}" name="{{ field }}">
+                            {% for score in [5,4,3,2,1] %}
+                                <option value="{{ score }}">{{ score }} star{% if score > 1 %}s{% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% endfor %}
+                <div class="col-12">
+                    <label class="form-label" for="comment">Comment</label>
+                    <textarea class="form-control" id="comment" name="comment" rows="4"></textarea>
+                </div>
+                <div class="col-12">
+                    <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Submit Feedback</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}Hospital Dashboard | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="page-heading split-heading">
+            <div>
+                <span class="section-kicker"><i class="bi bi-speedometer2"></i> Hospital dashboard</span>
+                <h1>{{ hospital.hospital_name }}</h1>
+                <p class="text-muted">{{ hospital.status|title }} · {{ hospital.address }}</p>
+            </div>
+            <a class="btn btn-outline-primary" href="{{ url_for('hospital_profile') }}"><i class="bi bi-pencil-square"></i> Edit Profile</a>
+        </div>
+
+        {% if hospital.status != 'approved' %}
+            <div class="alert alert-warning">
+                <i class="bi bi-hourglass-split"></i> This hospital is {{ hospital.status }}. Patients can find it only after super-admin approval.
+            </div>
+        {% endif %}
+
+        <div class="dashboard-grid">
+            <div class="metric-card"><i class="bi bi-calendar2-week"></i><span>Total appointments</span><strong>{{ stats.total or 0 }}</strong></div>
+            <div class="metric-card"><i class="bi bi-hourglass-split"></i><span>Pending</span><strong>{{ stats.pending or 0 }}</strong></div>
+            <div class="metric-card"><i class="bi bi-check2-circle"></i><span>Completed</span><strong>{{ stats.completed or 0 }}</strong></div>
+            <div class="metric-card"><i class="bi bi-star-fill"></i><span>Average rating</span><strong>{{ "%.1f"|format(rating.avg_rating or hospital.rating or 0) }}</strong></div>
+            <div class="metric-card"><i class="bi bi-clock-history"></i><span>Average wait</span><strong>{{ "%.0f"|format(wait.avg_wait or 0) }}m</strong></div>
+            <div class="metric-card"><i class="bi bi-clipboard2-pulse"></i><span>Most booked</span><strong class="metric-text">{{ most_booked.service_name if most_booked else "None" }}</strong></div>
+        </div>
+
+        <div class="row g-4 mt-1">
+            <div class="col-lg-6">
+                <div class="chart-panel">
+                    <h2>Appointment Status</h2>
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="chart-panel">
+                    <h2>Most Booked Services</h2>
+                    <canvas id="serviceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="hospital-quality-grid mt-4">
+            <div class="hospital-review-panel">
+                <div class="hospital-panel-title">
+                    <div>
+                        <span class="section-kicker"><i class="bi bi-chat-square-heart"></i> Patient reviews</span>
+                        <h2>Recent Feedback</h2>
+                    </div>
+                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('hospital_feedback') }}"><i class="bi bi-arrow-right"></i> View All</a>
+                </div>
+
+                <div class="review-score-row">
+                    <div><span>Doctor</span><strong>{{ "%.1f"|format(feedback_summary.avg_doctor_rating or 0) }}</strong></div>
+                    <div><span>Cleanliness</span><strong>{{ "%.1f"|format(feedback_summary.avg_cleanliness_rating or 0) }}</strong></div>
+                    <div><span>Waiting</span><strong>{{ "%.1f"|format(feedback_summary.avg_waiting_rating or 0) }}</strong></div>
+                    <div><span>Staff</span><strong>{{ "%.1f"|format(feedback_summary.avg_staff_rating or 0) }}</strong></div>
+                </div>
+
+                {% if recent_feedback %}
+                    <div class="dashboard-review-list">
+                        {% for feedback in recent_feedback %}
+                            <article class="dashboard-review-item">
+                                <div class="dashboard-review-head">
+                                    <div>
+                                        <strong>{{ feedback.patient_name }}</strong>
+                                        <span>{{ feedback.doctor_name }}</span>
+                                    </div>
+                                    <div class="review-rating"><i class="bi bi-star-fill"></i> {{ feedback.rating }}/5</div>
+                                </div>
+                                <p>{{ feedback.comment or "No written comment." }}</p>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state compact"><i class="bi bi-chat-square-heart"></i><p>No feedback yet.</p></div>
+                {% endif %}
+            </div>
+
+            <div class="hospital-complaint-panel">
+                <div class="hospital-panel-title">
+                    <div>
+                        <span class="section-kicker"><i class="bi bi-megaphone"></i> Service complaints</span>
+                        <h2>Complaints to Review</h2>
+                    </div>
+                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('hospital_complaints') }}"><i class="bi bi-arrow-right"></i> View All</a>
+                </div>
+
+                <div class="complaint-summary-row">
+                    <div><strong>{{ complaint_summary.open_complaints or 0 }}</strong><span>Open</span></div>
+                    <div><strong>{{ complaint_summary.in_review_complaints or 0 }}</strong><span>In review</span></div>
+                    <div><strong>{{ complaint_summary.resolved_complaints or 0 }}</strong><span>Resolved</span></div>
+                </div>
+
+                {% if recent_complaints %}
+                    <div class="dashboard-complaint-list">
+                        {% for complaint in recent_complaints %}
+                            <article class="dashboard-complaint-item">
+                                <div class="d-flex justify-content-between gap-2 align-items-start">
+                                    <strong>{{ complaint.patient_name }}</strong>
+                                    <span class="status-pill status-{{ complaint.status }}">{{ complaint.status|replace('_', ' ')|title }}</span>
+                                </div>
+                                <p>{{ complaint.complaint_text }}</p>
+                                <span class="table-subtext">{{ complaint.created_at }}</span>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state compact"><i class="bi bi-megaphone"></i><p>No complaints submitted.</p></div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="hospital-improvement-panel mt-4">
+            <div class="hospital-panel-title">
+                <div>
+                    <span class="section-kicker"><i class="bi bi-lightbulb"></i> Improvement guidance</span>
+                    <h2>Service Improvement Suggestions</h2>
+                </div>
+            </div>
+            <div class="improvement-tip-grid">
+                {% for tip in improvement_tips %}
+                    <article class="improvement-tip-card">
+                        <i class="bi {{ tip.icon }}"></i>
+                        <div>
+                            <h3>{{ tip.title }}</h3>
+                            <p>{{ tip.detail }}</p>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+window.HealthPilotCharts = {
+    statusLabels: {{ status_labels|tojson }},
+    statusValues: {{ status_values|tojson }},
+    serviceLabels: {{ service_labels|tojson }},
+    serviceValues: {{ service_values|tojson }}
+};
+</script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

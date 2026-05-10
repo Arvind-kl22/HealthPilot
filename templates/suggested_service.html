@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Suggested Service | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="page-heading">
+            <span class="section-kicker"><i class="bi bi-magic"></i> Recommendation</span>
+            <h1>Suggested Medical Service</h1>
+            <p class="text-muted">Symptoms reviewed: {{ symptoms }}</p>
+        </div>
+
+        {% if recommendations and recommendations[0].urgent %}
+            <div class="alert alert-danger d-flex gap-2 align-items-center">
+                <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                <div><strong>Emergency suggested.</strong> Severe symptoms need immediate care. Call local emergency services if the patient is in danger.</div>
+            </div>
+        {% endif %}
+
+        <div class="row g-4">
+            {% for recommendation in recommendations %}
+                <div class="col-lg-4">
+                    <div class="service-card {% if loop.first %}service-card-primary{% endif %}">
+                        <div class="service-icon"><i class="bi bi-clipboard2-pulse"></i></div>
+                        <h2>{{ recommendation.service_name }}</h2>
+                        <p>{{ recommendation.reason }}</p>
+                        {% if recommendation.matches %}
+                            <p class="small text-muted">Matched: {{ recommendation.matches|join(", ") }}</p>
+                        {% endif %}
+                        <a class="btn btn-primary w-100" href="{{ url_for('nearby_hospitals', service_id=recommendation.id) }}"><i class="bi bi-hospital"></i> Find Hospitals</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <a class="btn btn-outline-primary mt-4" href="{{ url_for('symptom_input') }}"><i class="bi bi-arrow-left"></i> Edit Symptoms</a>
+    </div>
+</section>
+{% endblock %}

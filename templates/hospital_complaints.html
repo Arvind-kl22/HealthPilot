@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Complaints | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="page-heading">
+            <span class="section-kicker"><i class="bi bi-megaphone"></i> Hospital admin</span>
+            <h1>Complaints</h1>
+        </div>
+        <div class="table-shell">
+            {% if complaints %}
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead><tr><th>Patient</th><th>Complaint</th><th>Status</th><th>Created</th></tr></thead>
+                        <tbody>
+                        {% for complaint in complaints %}
+                            <tr>
+                                <td>{{ complaint.patient_name }}</td>
+                                <td>{{ complaint.complaint_text }}</td>
+                                <td><span class="status-pill status-{{ complaint.status }}">{{ complaint.status|replace('_', ' ')|title }}</span></td>
+                                <td>{{ complaint.created_at }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state"><i class="bi bi-megaphone"></i><p>No complaints submitted.</p></div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

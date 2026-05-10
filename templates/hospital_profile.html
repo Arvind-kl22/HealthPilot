@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Hospital Profile | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="form-shell wide-form">
+            <span class="section-kicker"><i class="bi bi-hospital"></i> Hospital profile</span>
+            <h1>{{ hospital.hospital_name }}</h1>
+            <form method="post" class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="hospital_name">Hospital name</label>
+                    <input class="form-control" id="hospital_name" name="hospital_name" value="{{ hospital.hospital_name }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="city">City</label>
+                    <input class="form-control" id="city" name="city" value="{{ hospital.city }}" required>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="address">Address</label>
+                    <input class="form-control" id="address" name="address" value="{{ hospital.address }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="latitude">Latitude</label>
+                    <input class="form-control" type="number" step="any" id="latitude" name="latitude" value="{{ hospital.latitude }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="longitude">Longitude</label>
+                    <input class="form-control" type="number" step="any" id="longitude" name="longitude" value="{{ hospital.longitude }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="opening_time">Opening time</label>
+                    <input class="form-control" type="time" id="opening_time" name="opening_time" value="{{ hospital.opening_time|time_input }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="closing_time">Closing time</label>
+                    <input class="form-control" type="time" id="closing_time" name="closing_time" value="{{ hospital.closing_time|time_input }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="contact">Contact</label>
+                    <input class="form-control" id="contact" name="contact" value="{{ hospital.contact }}">
+                </div>
+                <div class="col-12">
+                    <button class="btn btn-primary" type="submit"><i class="bi bi-save"></i> Save Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

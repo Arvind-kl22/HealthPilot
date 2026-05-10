@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}AI Service Suggestion | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="page-heading split-heading">
+            <div>
+                <span class="section-kicker"><i class="bi bi-stars"></i> AI recommendation</span>
+                <h1>Medical Service Suggestion</h1>
+                <p class="text-muted">Symptoms: {{ symptoms }}</p>
+            </div>
+            <a class="btn btn-outline-primary" href="{{ url_for('symptom_input') }}"><i class="bi bi-pencil-square"></i> Edit Symptoms</a>
+        </div>
+
+        {% if prediction_error %}
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i>
+                {{ prediction_error }}
+            </div>
+            <div class="disclaimer-box">
+                <i class="bi bi-info-circle"></i>
+                <span>Train the AI model with <strong>python train_model.py</strong>, then restart Flask.</span>
+            </div>
+        {% elif prediction %}
+            {% if prediction.is_emergency %}
+                <div class="alert alert-danger emergency-alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <div>
+                        <strong>Emergency warning</strong>
+                        <p>{{ prediction.first_aid }}</p>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if prediction.confidence < 50 %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-question-circle"></i>
+                    We are not fully sure. Please choose from suggested services or consult a doctor.
+                </div>
+            {% endif %}
+
+            <div class="result-summary-grid">
+                <div class="result-summary-card">
+                    <i class="bi bi-clipboard2-pulse"></i>
+                    <span>Suggested service</span>
+                    <strong>{{ prediction.service }}</strong>
+                </div>
+                <div class="result-summary-card">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Confidence</span>
+                    <strong>{{ "%.0f"|format(prediction.confidence) }}%</strong>
+                </div>
+                <div class="result-summary-card first-aid-card">
+                    <i class="bi bi-bandaid"></i>
+                    <span>First-aid or home-care guidance</span>
+                    <strong>{{ prediction.first_aid }}</strong>
+                </div>
+            </div>
+
+            <div class="disclaimer-box mt-3">
+                <i class="bi bi-shield-exclamation"></i>
+                <span>HealthPilot provides service suggestions and basic first-aid guidance only. It does not replace professional medical advice.</span>
+            </div>
+
+            {% if prediction.confidence < 50 and suggested_services %}
+                <div class="table-shell mt-4">
+                    <div class="table-title"><h2>Suggested Services</h2></div>
+                    <div class="symptom-chip-wrap">
+                        {% for item in suggested_services %}
+                            <a class="symptom-chip" href="{{ url_for('nearby_hospitals', service_id=item.id) }}">{{ item.service_name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="table-shell mt-4">
+                <div class="table-title">
+                    <h2>Hospitals Providing {{ prediction.service }}</h2>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('patient_location') }}"><i class="bi bi-geo-alt"></i> Change Location</a>
+                        {% if service %}
+                            <a href="{{ url_for('nearby_hospitals', service_id=service.id) }}"><i class="bi bi-map"></i> Map View</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if patient_location %}
+                    <div class="location-banner">
+                        <i class="bi bi-geo-alt"></i>
+                        <span>Using saved {{ patient_location.source }} location: {{ "%.5f"|format(patient_location.lat) }}, {{ "%.5f"|format(patient_location.lng) }}</span>
+                    </div>
+                {% else %}
+                    <div class="location-banner">
+                        <i class="bi bi-info-circle"></i>
+                        <span>No patient location selected. Add one for better ranking and navigation.</span>
+                    </div>
+                {% endif %}
+                {% if hospitals %}
+                    <div class="row g-4">
+                        {% for hospital in hospitals %}
+                            <div class="col-lg-6">
+                                <article class="hospital-card {% if loop.first %}best{% endif %}">
+                                    <div class="hospital-card-header">
+                                        <div>
+                                            <h2>{{ hospital.hospital_name }}</h2>
+                                            <p class="small text-muted mb-0">{{ hospital.address }}, {{ hospital.city }}</p>
+                                        </div>
+                                        {% if loop.first %}<span class="hospital-badge">Best match</span>{% endif %}
+                                    </div>
+                                    <div class="hospital-meta">
+                                        <span><i class="bi bi-person-vcard"></i> {{ hospital.doctor_name }}</span>
+                                        <span><i class="bi bi-star-fill text-warning"></i> Hospital {{ "%.1f"|format(hospital.hospital_rating) }}</span>
+                                        <span><i class="bi bi-star"></i> Doctor {{ "%.1f"|format(hospital.doctor_rating) }}</span>
+                                        <span><i class="bi bi-people"></i> Queue {{ hospital.current_queue }}</span>
+                                        <span><i class="bi bi-hourglass-split"></i> {{ hospital.estimated_waiting_time }} min wait</span>
+                                        <span><i class="bi bi-cash-coin"></i> ${{ "%.2f"|format(hospital.consultation_fee) }}</span>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <a class="btn btn-primary" href="{{ url_for('book_appointment', hospital_id=hospital.hospital_id, doctor_id=hospital.doctor_id, service_id=hospital.service_id) }}"><i class="bi bi-calendar2-plus"></i> Book Appointment</a>
+                                        <a class="btn btn-outline-primary" href="{{ url_for('hospital_detail', hospital_id=hospital.hospital_id, service_id=hospital.service_id) }}"><i class="bi bi-info-circle"></i> Details</a>
+                                        <a class="btn btn-outline-success js-service-nav disabled"
+                                           href="#"
+                                           target="_blank"
+                                           rel="noreferrer"
+                                           data-hospital-lat="{{ hospital.latitude }}"
+                                           data-hospital-lng="{{ hospital.longitude }}"
+                                           data-hospital-name="{{ hospital.hospital_name|e }}"><i class="bi bi-map"></i> Navigation</a>
+                                    </div>
+                                </article>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-hospital"></i>
+                        {% if service %}
+                            <p>No approved hospital currently provides {{ prediction.service }}.</p>
+                        {% else %}
+                            <p>{{ prediction.service }} is not yet available in the hospital service database.</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+    const buttons = document.querySelectorAll(".js-service-nav");
+    const savedLocation = {{ patient_location|tojson }};
+    if (!buttons.length) {
+        return;
+    }
+
+    function updateButtons(userLat, userLng) {
+        buttons.forEach((button) => {
+            const hospitalLat = button.dataset.hospitalLat;
+            const hospitalLng = button.dataset.hospitalLng;
+            const hospitalName = button.dataset.hospitalName || "Hospital";
+            const start = `${userLat},${userLng},Your Location`;
+            const end = `${hospitalLat},${hospitalLng},${hospitalName}`;
+            button.href = `https://mappls.com/direction?places=${encodeURIComponent(start + ";" + end)}`;
+            button.classList.remove("disabled");
+        });
+    }
+
+    if (savedLocation) {
+        updateButtons(savedLocation.lat, savedLocation.lng);
+        return;
+    }
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+            updateButtons(position.coords.latitude, position.coords.longitude);
+        });
+    }
+})();
+</script>
+{% endblock %}

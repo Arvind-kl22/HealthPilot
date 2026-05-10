@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Patient Feedback | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="page-heading">
+            <span class="section-kicker"><i class="bi bi-chat-square-heart"></i> Hospital admin</span>
+            <h1>Patient Feedback</h1>
+        </div>
+        <div class="table-shell">
+            {% if feedback_rows %}
+                {% for feedback in feedback_rows %}
+                    <div class="feedback-item">
+                        <div class="d-flex justify-content-between gap-2 flex-wrap">
+                            <strong>{{ feedback.patient_name }} for {{ feedback.doctor_name }}</strong>
+                            <span><i class="bi bi-star-fill"></i> Doctor {{ feedback.rating }}/5 · Staff {{ feedback.staff_rating }}/5</span>
+                        </div>
+                        <p>{{ feedback.comment or "No written comment." }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state"><i class="bi bi-chat-square-heart"></i><p>No feedback yet.</p></div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

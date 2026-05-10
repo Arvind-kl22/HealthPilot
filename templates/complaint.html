@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Submit Complaint | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad compact-section">
+    <div class="container">
+        <div class="form-shell wide-form">
+            <span class="section-kicker"><i class="bi bi-megaphone"></i> Complaint</span>
+            <h1>{{ hospital.hospital_name }}</h1>
+            <form method="post">
+                <label class="form-label" for="complaint_text">Complaint details</label>
+                <textarea class="form-control" id="complaint_text" name="complaint_text" rows="6" required></textarea>
+                <button class="btn btn-danger mt-3" type="submit"><i class="bi bi-send"></i> Submit Complaint</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

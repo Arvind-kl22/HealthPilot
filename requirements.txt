@@ -1,0 +1,6 @@
+Flask>=3.0,<4
+mysql-connector-python>=9.0,<10
+sentence-transformers
+scikit-learn
+pandas
+joblib

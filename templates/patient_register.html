@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Patient Register | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad compact-section">
+    <div class="container">
+        <div class="form-shell wide-form">
+            <span class="section-kicker"><i class="bi bi-person-plus"></i> Patient account</span>
+            <h1>Create Patient Account</h1>
+            <form method="post" class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="name">Full name</label>
+                    <input class="form-control" id="name" name="name" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="phone">Phone</label>
+                    <input class="form-control" id="phone" name="phone">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="email">Email</label>
+                    <input class="form-control" type="email" id="email" name="email" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="password">Password</label>
+                    <input class="form-control" type="password" id="password" name="password" minlength="6" required>
+                </div>
+                <div class="col-12">
+                    <button class="btn btn-primary" type="submit"><i class="bi bi-person-plus"></i> Register</button>
+                    <a class="btn btn-outline-primary" href="{{ url_for('patient_login') }}">Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

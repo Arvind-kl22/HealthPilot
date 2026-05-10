@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}HealthPilot | Healthcare Queue and Route Platform{% endblock %}
+{% block content %}
+<section class="home-hero">
+    <div class="container hero-content">
+        <div class="hero-copy">
+            <span class="eyebrow"><i class="bi bi-heart-pulse"></i> AI healthcare queue and route management</span>
+            <h1>HealthPilot</h1>
+            <p>Connect symptoms, hospital availability, live queues, appointments, and Mappls navigation in one clean healthcare access platform.</p>
+            <div class="hero-actions">
+                {% if current_user and current_user.role == 'patient' %}
+                    <a class="btn btn-light btn-lg" href="{{ url_for('symptom_input') }}"><i class="bi bi-stars"></i> Find Care</a>
+                    <a class="btn btn-outline-light btn-lg" href="{{ url_for('patient_location') }}"><i class="bi bi-geo-alt"></i> Set Location</a>
+                {% else %}
+                    <a class="btn btn-light btn-lg" href="{{ url_for('patient_login') }}"><i class="bi bi-person"></i> Patient Login</a>
+                    <a class="btn btn-outline-light btn-lg" href="{{ url_for('hospital_register') }}"><i class="bi bi-building-add"></i> Register Hospital</a>
+                {% endif %}
+            </div>
+            <div class="hero-capabilities">
+                <span><i class="bi bi-magic"></i> Symptom AI</span>
+                <span><i class="bi bi-people"></i> Queue visibility</span>
+                <span><i class="bi bi-signpost-2"></i> Route guidance</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="home-overview-band">
+    <div class="container">
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="bi bi-hospital"></i></div>
+                <div>
+                    <strong>{{ stats.hospitals }}</strong>
+                    <span>Approved hospitals</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon stat-icon-teal"><i class="bi bi-clipboard2-pulse"></i></div>
+                <div>
+                    <strong>{{ stats.services }}</strong>
+                    <span>Medical services</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon stat-icon-green"><i class="bi bi-calendar2-check"></i></div>
+                <div>
+                    <strong>{{ stats.appointments }}</strong>
+                    <span>Appointments booked</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="home-section">
+    <div class="container">
+        <div class="home-section-heading">
+            <span class="section-kicker"><i class="bi bi-grid-1x2"></i> Role workspaces</span>
+            <h2>Built for every healthcare touchpoint</h2>
+            <p>Patients get faster decisions. Hospitals get operational control. Super admins get platform oversight.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="role-card">
+                    <div class="role-icon role-icon-blue"><i class="bi bi-person-heart"></i></div>
+                    <span class="role-label">Patient care</span>
+                    <h2>Patients</h2>
+                    <p>Enter symptoms naturally, save a starting location, compare hospitals, book an appointment token, and open navigation.</p>
+                    <ul class="home-card-list">
+                        <li><i class="bi bi-check2"></i> AI service suggestion</li>
+                        <li><i class="bi bi-check2"></i> Hospital comparison</li>
+                        <li><i class="bi bi-check2"></i> Mappls route view</li>
+                    </ul>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-primary" href="{{ url_for('patient_login') }}"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+                        <a class="btn btn-outline-primary" href="{{ url_for('patient_register') }}"><i class="bi bi-person-plus"></i> Register</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="role-card">
+                    <div class="role-icon role-icon-teal"><i class="bi bi-building-add"></i></div>
+                    <span class="role-label">Hospital operations</span>
+                    <h2>Hospitals</h2>
+                    <p>Register a facility, manage doctors and services, monitor queues, update appointments, and review patient feedback.</p>
+                    <ul class="home-card-list">
+                        <li><i class="bi bi-check2"></i> Doctor and service setup</li>
+                        <li><i class="bi bi-check2"></i> Queue management</li>
+                        <li><i class="bi bi-check2"></i> Analytics dashboard</li>
+                    </ul>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-primary" href="{{ url_for('hospital_login') }}"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+                        <a class="btn btn-outline-primary" href="{{ url_for('hospital_register') }}"><i class="bi bi-plus-circle"></i> Register</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="role-card">
+                    <div class="role-icon role-icon-green"><i class="bi bi-shield-check"></i></div>
+                    <span class="role-label">Platform governance</span>
+                    <h2>Super Admin</h2>
+                    <p>Approve hospitals, track platform health, inspect complaints, and monitor hospital quality scores.</p>
+                    <ul class="home-card-list">
+                        <li><i class="bi bi-check2"></i> Hospital approvals</li>
+                        <li><i class="bi bi-check2"></i> Complaint monitoring</li>
+                        <li><i class="bi bi-check2"></i> Quality scoring</li>
+                    </ul>
+                    <a class="btn btn-primary" href="{{ url_for('super_admin_login') }}"><i class="bi bi-lock"></i> Admin Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="home-workflow-band">
+    <div class="container">
+        <div class="home-section-heading home-section-heading-light">
+            <span class="section-kicker"><i class="bi bi-diagram-3"></i> Patient journey</span>
+            <h2>From symptoms to hospital route</h2>
+        </div>
+        <div class="workflow-grid">
+            <div class="workflow-step">
+                <span>01</span>
+                <i class="bi bi-chat-left-text"></i>
+                <h3>Describe symptoms</h3>
+                <p>Patients symptoms</p>
+            </div>
+            <div class="workflow-step">
+                <span>02</span>
+                <i class="bi bi-clipboard2-pulse"></i>
+                <h3>Get service guidance</h3>
+                <p>The AI model suggests a medical service with first-aid guidance and emergency checks.</p>
+            </div>
+            <div class="workflow-step">
+                <span>03</span>
+                <i class="bi bi-hospital"></i>
+                <h3>Compare hospitals</h3>
+                <p>Hospitals are ranked using ratings, queue status, waiting time, and travel time.</p>
+            </div>
+            <div class="workflow-step">
+                <span>04</span>
+                <i class="bi bi-signpost-2"></i>
+                <h3>Book and navigate</h3>
+                <p>The system creates a token and opens a route from the selected patient location.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

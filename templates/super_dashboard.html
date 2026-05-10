@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Super Admin Dashboard | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="page-heading">
+            <span class="section-kicker"><i class="bi bi-shield-check"></i> Super admin</span>
+            <h1>Platform Dashboard</h1>
+        </div>
+        <div class="dashboard-grid">
+            <div class="metric-card"><i class="bi bi-hospital"></i><span>Hospitals</span><strong>{{ stats.hospitals }}</strong></div>
+            <div class="metric-card"><i class="bi bi-hourglass-split"></i><span>Pending approvals</span><strong>{{ stats.pending }}</strong></div>
+            <div class="metric-card"><i class="bi bi-calendar2-check"></i><span>Appointments</span><strong>{{ stats.appointments }}</strong></div>
+            <div class="metric-card"><i class="bi bi-megaphone"></i><span>Open complaints</span><strong>{{ stats.complaints }}</strong></div>
+        </div>
+
+        <div class="row g-4 mt-1">
+            <div class="col-lg-6"><div class="chart-panel"><h2>Appointments</h2><canvas id="adminAppointmentChart"></canvas></div></div>
+            <div class="col-lg-6"><div class="chart-panel"><h2>Hospital Status</h2><canvas id="adminHospitalChart"></canvas></div></div>
+        </div>
+
+        <div class="table-shell mt-4">
+            <div class="table-title"><h2>Registered Hospitals</h2></div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Hospital</th><th>Admin</th><th>Rating</th><th>Status</th><th>Decision</th><th>Delete</th></tr></thead>
+                    <tbody>
+                    {% for hospital in hospitals %}
+                        <tr>
+                            <td>{{ hospital.hospital_name }}<br><span class="small text-muted">{{ hospital.city }}</span></td>
+                            <td>{{ hospital.admin_name or "Unassigned" }}<br><span class="small text-muted">{{ hospital.admin_email or "" }}</span></td>
+                            <td><i class="bi bi-star-fill text-warning"></i> {{ hospital.rating }}</td>
+                            <td><span class="status-pill status-{{ hospital.status }}">{{ hospital.status|title }}</span></td>
+                            <td>
+                                <form class="action-form" method="post" action="{{ url_for('update_hospital_status', hospital_id=hospital.id) }}">
+                                    <select class="form-select form-select-sm" name="status">
+                                        <option value="approved">Approve</option>
+                                        <option value="rejected">Reject</option>
+                                        <option value="pending">Pending</option>
+                                    </select>
+                                    <button class="btn btn-sm btn-primary" type="submit"><i class="bi bi-check2"></i></button>
+                                </form>
+                            </td>
+                            <td>
+                                <form method="post"
+                                      action="{{ url_for('delete_hospital', hospital_id=hospital.id) }}"
+                                      onsubmit="return confirm('Delete {{ hospital.hospital_name|e }}? This will remove its doctors, services mapping, queues, appointments, feedback, and complaints.');">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="table-shell mt-4">
+            <div class="table-title"><h2>Hospital Quality Scores</h2></div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Hospital</th><th>Status</th><th>Avg wait</th><th>Open complaints</th><th>Completion</th><th>Quality score</th></tr></thead>
+                    <tbody>
+                    {% for row in quality_rows %}
+                        <tr>
+                            <td>{{ row.hospital_name }}</td>
+                            <td><span class="status-pill status-{{ row.status }}">{{ row.status|title }}</span></td>
+                            <td>{{ "%.0f"|format(row.avg_wait or 0) }} min</td>
+                            <td>{{ row.open_complaints }}</td>
+                            <td>{{ row.completed_appointments }}/{{ row.total_appointments }}</td>
+                            <td><strong>{{ row.quality_score }}</strong>/100</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="table-shell mt-4">
+            <div class="table-title"><h2>Complaints</h2></div>
+            {% if complaints %}
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead><tr><th>Hospital</th><th>Patient</th><th>Complaint</th><th>Status</th><th>Update</th></tr></thead>
+                        <tbody>
+                        {% for complaint in complaints %}
+                            <tr>
+                                <td>{{ complaint.hospital_name }}</td>
+                                <td>{{ complaint.patient_name }}</td>
+                                <td>{{ complaint.complaint_text }}</td>
+                                <td><span class="status-pill status-{{ complaint.status }}">{{ complaint.status|replace('_', ' ')|title }}</span></td>
+                                <td>
+                                    <form class="action-form" method="post" action="{{ url_for('update_complaint_status', complaint_id=complaint.id) }}">
+                                        <select class="form-select form-select-sm" name="status">
+                                            <option value="open">Open</option>
+                                            <option value="in_review">In Review</option>
+                                            <option value="resolved">Resolved</option>
+                                        </select>
+                                        <button class="btn btn-sm btn-primary" type="submit"><i class="bi bi-check2"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state compact"><i class="bi bi-megaphone"></i><p>No complaints yet.</p></div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+window.HealthPilotAdminCharts = {
+    appointmentLabels: {{ appointment_labels|tojson }},
+    appointmentValues: {{ appointment_values|tojson }},
+    hospitalLabels: {{ hospital_labels|tojson }},
+    hospitalValues: {{ hospital_values|tojson }}
+};
+</script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

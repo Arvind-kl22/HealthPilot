@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Appointment History | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="page-heading split-heading">
+            <div>
+                <span class="section-kicker"><i class="bi bi-calendar2-check"></i> Patient appointments</span>
+                <h1>Appointment History</h1>
+            </div>
+            <a class="btn btn-primary" href="{{ url_for('symptom_input') }}"><i class="bi bi-plus-circle"></i> New Appointment</a>
+        </div>
+        <div class="table-shell">
+            {% if appointments %}
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Token</th>
+                            <th>Hospital</th>
+                            <th>Doctor</th>
+                            <th>Service</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in appointments %}
+                            <tr>
+                                <td>{{ item.token_number }}</td>
+                                <td>{{ item.hospital_name }}</td>
+                                <td>{{ item.doctor_name }}</td>
+                                <td>{{ item.service_name }}</td>
+                                <td>{{ item.appointment_date|date_input }} {{ item.appointment_time|time_input }}</td>
+                                <td><span class="status-pill status-{{ item.status }}">{{ item.status|title }}</span></td>
+                                <td class="table-actions">
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('appointment_route', appointment_id=item.id) }}"><i class="bi bi-signpost-2"></i> Route</a>
+                                    <a class="btn btn-sm btn-outline-success" href="{{ url_for('feedback', appointment_id=item.id) }}"><i class="bi bi-star"></i> Feedback</a>
+                                    <a class="btn btn-sm btn-outline-danger" href="{{ url_for('submit_complaint', hospital_id=item.hospital_id) }}"><i class="bi bi-megaphone"></i> Complaint</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state"><i class="bi bi-calendar2-plus"></i><p>No appointments yet.</p></div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

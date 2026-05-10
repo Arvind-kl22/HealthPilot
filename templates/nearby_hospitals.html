@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Nearby Hospitals | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="page-heading split-heading">
+            <div>
+                <span class="section-kicker"><i class="bi bi-geo-alt"></i> Nearby hospitals</span>
+                <h1>{{ service.service_name }}</h1>
+                <p class="text-muted">Hospitals are ranked by rating, doctor rating, waiting time, and travel time.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-outline-primary" href="{{ url_for('patient_location') }}"><i class="bi bi-geo-alt"></i> Change Location</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('symptom_input') }}"><i class="bi bi-arrow-left"></i> Symptoms</a>
+            </div>
+        </div>
+
+        <div class="map-layout">
+            <div class="map-panel">
+                <div id="hospitalMap" class="map-canvas"></div>
+            </div>
+            <div>
+                <div class="location-banner" id="locationStatus">
+                    <i class="bi bi-crosshair"></i>
+                    <span>Getting your current location...</span>
+                </div>
+                <div id="hospitalResults" class="hospital-results"></div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+window.HealthPilotNearby = {
+    serviceId: {{ service.id }},
+    defaultCenter: [40.758, -73.9855],
+    mapplsEnabled: {{ (mappls_web_api_key|length > 0)|tojson }},
+    patientLocation: {{ patient_location|tojson }}
+};
+</script>
+{% if mappls_web_api_key %}
+<script src="https://sdk.mappls.com/map/sdk/web?v=3.0&access_token={{ mappls_web_api_key }}"></script>
+{% endif %}
+<script src="{{ url_for('static', filename='js/nearby.js') }}"></script>
+{% endblock %}

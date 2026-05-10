@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Symptom Input | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad compact-section">
+    <div class="container">
+        <div class="form-shell wide-form">
+            <span class="section-kicker"><i class="bi bi-stars"></i> AI service suggestion</span>
+            <h1>Enter Symptoms</h1>
+            <form method="post" action="{{ url_for('predict_service') }}">
+                <label class="form-label" for="symptoms">Symptoms</label>
+                <textarea class="form-control symptom-box" id="symptoms" name="symptoms" rows="5" placeholder="Example: I have fever cough body pain and feel weak" required></textarea>
+                <div class="symptom-chip-wrap mt-3">
+                    {% for symptom in common_symptoms %}
+                        <button class="symptom-chip" type="button" data-symptom="{{ symptom }}">{{ symptom }}</button>
+                    {% endfor %}
+                </div>
+                <button class="btn btn-primary btn-lg mt-4" type="submit"><i class="bi bi-magic"></i> Suggest Medical Service</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll(".symptom-chip").forEach((button) => {
+    button.addEventListener("click", () => {
+        const input = document.getElementById("symptoms");
+        const value = button.dataset.symptom;
+        const parts = input.value.split(",").map((item) => item.trim()).filter(Boolean);
+        if (!parts.includes(value)) {
+            parts.push(value);
+        }
+        input.value = parts.join(", ");
+        input.focus();
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Book Appointment | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad compact-section">
+    <div class="container">
+        <div class="form-shell wide-form">
+            <span class="section-kicker"><i class="bi bi-calendar2-plus"></i> Appointment booking</span>
+            <h1>{{ details.service_name }}</h1>
+            <div class="booking-summary">
+                <span><i class="bi bi-hospital"></i> {{ details.hospital_name }}</span>
+                <span><i class="bi bi-person-vcard"></i> {{ details.doctor_name }}</span>
+                <span><i class="bi bi-star-fill"></i> {{ details.doctor_rating }}</span>
+                <span><i class="bi bi-cash-coin"></i> ${{ "%.2f"|format(details.consultation_fee) }}</span>
+            </div>
+            <form method="post" class="row g-3 mt-2">
+                <div class="col-md-6">
+                    <label class="form-label" for="appointment_date">Appointment date</label>
+                    <input class="form-control" type="date" id="appointment_date" name="appointment_date" min="{{ today }}" value="{{ today }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="appointment_time">Appointment time</label>
+                    <input class="form-control" type="time" id="appointment_time" name="appointment_time" value="10:00" required>
+                </div>
+                <div class="col-12">
+                    <button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-ticket-perforated"></i> Book and Generate Token</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

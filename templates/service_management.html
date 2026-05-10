@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Service Management | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="page-heading">
+            <span class="section-kicker"><i class="bi bi-clipboard2-pulse"></i> Hospital admin</span>
+            <h1>Service Management</h1>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="form-shell">
+                    <h2>Add Medical Service</h2>
+                    <form method="post" class="stacked-form">
+                        <input type="hidden" name="action" value="add">
+                        <div><label class="form-label" for="service_name">Service name</label><input class="form-control" id="service_name" name="service_name" required></div>
+                        <div><label class="form-label" for="description">Description</label><textarea class="form-control" id="description" name="description" rows="3"></textarea></div>
+                        <div>
+                            <label class="form-label" for="doctor_id_add">Assign to doctor</label>
+                            <select class="form-select" id="doctor_id_add" name="doctor_id">
+                                <option value="">Save only</option>
+                                {% for doctor in doctors %}
+                                    <option value="{{ doctor.id }}">{{ doctor.doctor_name }} · {{ doctor.specialization }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" type="submit"><i class="bi bi-save"></i> Save Service</button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="form-shell">
+                    <h2>Assign Existing Service</h2>
+                    <form method="post" class="stacked-form">
+                        <input type="hidden" name="action" value="assign">
+                        <div>
+                            <label class="form-label" for="doctor_id">Doctor</label>
+                            <select class="form-select" id="doctor_id" name="doctor_id" required>
+                                {% for doctor in doctors %}
+                                    <option value="{{ doctor.id }}">{{ doctor.doctor_name }} · {{ doctor.specialization }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label" for="service_id">Service</label>
+                            <select class="form-select" id="service_id" name="service_id" required>
+                                {% for service in services %}
+                                    <option value="{{ service.id }}">{{ service.service_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" type="submit"><i class="bi bi-link-45deg"></i> Assign</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="table-shell mt-4">
+            <div class="table-title"><h2>Assigned Services</h2></div>
+            {% if assigned %}
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead><tr><th>Doctor</th><th>Service</th></tr></thead>
+                        <tbody>
+                        {% for item in assigned %}
+                            <tr><td>{{ item.doctor_name }}</td><td>{{ item.service_name }}</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state compact"><i class="bi bi-clipboard-plus"></i><p>No assigned services yet.</p></div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

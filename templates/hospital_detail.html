@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{{ hospital.hospital_name }} | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="detail-header">
+            <div>
+                <span class="section-kicker"><i class="bi bi-hospital"></i> Hospital detail</span>
+                <h1>{{ hospital.hospital_name }}</h1>
+                <p>{{ hospital.address }}, {{ hospital.city }}</p>
+            </div>
+            <div class="detail-score">
+                <i class="bi bi-star-fill"></i>
+                <strong>{{ hospital.rating }}</strong>
+                <span>Hospital rating</span>
+            </div>
+        </div>
+
+        <div class="info-strip">
+            <span><i class="bi bi-telephone"></i> {{ hospital.contact }}</span>
+            <span><i class="bi bi-clock"></i> {{ hospital.opening_time|time_input }} - {{ hospital.closing_time|time_input }}</span>
+            <span><i class="bi bi-clipboard2-pulse"></i> {{ service.service_name }}</span>
+            {% if queue %}
+                <span><i class="bi bi-people"></i> Queue {{ queue.current_queue }}</span>
+                <span><i class="bi bi-hourglass-split"></i> {{ queue.estimated_waiting_time }} min wait</span>
+            {% endif %}
+        </div>
+
+        <h2 class="section-title">Available Doctors</h2>
+        <div class="row g-4">
+            {% for doctor in doctors %}
+                <div class="col-lg-4">
+                    <div class="doctor-card">
+                        <div class="doctor-avatar"><i class="bi bi-person-vcard"></i></div>
+                        <h3>{{ doctor.doctor_name }}</h3>
+                        <p class="mb-1">{{ doctor.specialization }}</p>
+                        <p class="small text-muted">{{ doctor.qualification }} · {{ doctor.experience }} years</p>
+                        <div class="mini-metrics">
+                            <span><i class="bi bi-star-fill"></i> {{ doctor.rating }}</span>
+                            <span><i class="bi bi-cash-coin"></i> ${{ "%.2f"|format(doctor.consultation_fee) }}</span>
+                        </div>
+                        <p class="small text-muted">{{ doctor.availability or "Availability will be confirmed by hospital." }}</p>
+                        <a class="btn btn-primary w-100" href="{{ url_for('book_appointment', hospital_id=hospital.id, doctor_id=doctor.id, service_id=service.id) }}"><i class="bi bi-calendar2-plus"></i> Book Appointment</a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-person-x"></i>
+                    <p>No doctors are currently mapped to this service.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="table-shell mt-4">
+            <div class="table-title">
+                <h2>Recent Feedback</h2>
+                <a href="{{ url_for('submit_complaint', hospital_id=hospital.id) }}"><i class="bi bi-megaphone"></i> Submit complaint</a>
+            </div>
+            {% if feedback_rows %}
+                {% for feedback in feedback_rows %}
+                    <div class="feedback-item">
+                        <strong>{{ feedback.patient_name }}</strong>
+                        <span><i class="bi bi-star-fill"></i> {{ feedback.rating }}/5</span>
+                        <p>{{ feedback.comment or "No written comment." }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state compact"><i class="bi bi-chat-square-heart"></i><p>No feedback yet.</p></div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

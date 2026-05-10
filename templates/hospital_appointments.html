@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Appointment Management | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="page-heading">
+            <span class="section-kicker"><i class="bi bi-calendar2-week"></i> Hospital admin</span>
+            <h1>Appointment Management</h1>
+        </div>
+        <div class="table-shell">
+            {% if appointments %}
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Token</th><th>Patient</th><th>Doctor</th><th>Service</th><th>Date</th><th>Status</th><th>Action</th><th>Delete</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in appointments %}
+                            <tr>
+                                <td>{{ item.token_number }}</td>
+                                <td>{{ item.patient_name }}<br><span class="small text-muted">{{ item.patient_phone }}</span></td>
+                                <td>{{ item.doctor_name }}</td>
+                                <td>{{ item.service_name }}</td>
+                                <td>{{ item.appointment_date|date_input }} {{ item.appointment_time|time_input }}</td>
+                                <td><span class="status-pill status-{{ item.status }}">{{ item.status|title }}</span></td>
+                                <td>
+                                    <form method="post" class="action-form">
+                                        <input type="hidden" name="action" value="status">
+                                        <input type="hidden" name="appointment_id" value="{{ item.id }}">
+                                        <select class="form-select form-select-sm" name="status">
+                                            <option value="accepted">Accept</option>
+                                            <option value="rejected">Reject</option>
+                                            <option value="completed">Complete</option>
+                                        </select>
+                                        <button class="btn btn-sm btn-primary" type="submit"><i class="bi bi-check2"></i></button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <form method="post" onsubmit="return confirm('Delete appointment {{ item.token_number }}? This cannot be undone.');">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="appointment_id" value="{{ item.id }}">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state"><i class="bi bi-calendar2-plus"></i><p>No appointment requests yet.</p></div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

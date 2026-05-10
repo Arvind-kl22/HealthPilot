@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad compact-section">
+    <div class="container">
+        <div class="form-shell">
+            <div>
+                <span class="section-kicker"><i class="bi bi-box-arrow-in-right"></i> Secure access</span>
+                <h1>{{ title }}</h1>
+                <p class="text-muted">Use your registered email and password to access the correct dashboard.</p>
+            </div>
+            <form method="post" class="stacked-form">
+                <div>
+                    <label class="form-label" for="email">Email</label>
+                    <input class="form-control" type="email" id="email" name="email" required>
+                </div>
+                <div>
+                    <label class="form-label" for="password">Password</label>
+                    <input class="form-control" type="password" id="password" name="password" required>
+                </div>
+                <button class="btn btn-primary w-100" type="submit"><i class="bi bi-box-arrow-in-right"></i> Login</button>
+            </form>
+            {% if role == 'patient' %}
+                <p class="small mt-3 mb-0">New here? <a href="{{ url_for('patient_register') }}">Create a patient account</a>.</p>
+            {% elif role == 'hospital_admin' %}
+                <p class="small mt-3 mb-0">Need hospital approval? <a href="{{ url_for('hospital_register') }}">Register your hospital</a>.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

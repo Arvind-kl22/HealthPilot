@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Doctor Management | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="page-heading">
+            <span class="section-kicker"><i class="bi bi-person-vcard"></i> Hospital admin</span>
+            <h1>Doctor Management</h1>
+        </div>
+
+        <div class="form-shell wide-form mb-4">
+            <h2>Add Doctor</h2>
+            <form method="post" class="row g-3">
+                <div class="col-md-6"><label class="form-label" for="doctor_name">Name</label><input class="form-control" id="doctor_name" name="doctor_name" required></div>
+                <div class="col-md-6"><label class="form-label" for="specialization">Specialization</label><input class="form-control" id="specialization" name="specialization" required></div>
+                <div class="col-md-4"><label class="form-label" for="qualification">Qualification</label><input class="form-control" id="qualification" name="qualification"></div>
+                <div class="col-md-4"><label class="form-label" for="experience">Experience</label><input class="form-control" type="number" min="0" id="experience" name="experience" value="0"></div>
+                <div class="col-md-4"><label class="form-label" for="consultation_fee">Consultation fee</label><input class="form-control" type="number" min="0" step="0.01" id="consultation_fee" name="consultation_fee" value="80"></div>
+                <div class="col-12">
+                    <label class="form-label">Services provided</label>
+                    <div class="checkbox-grid">
+                        {% for service in services %}
+                            <label><input type="checkbox" name="services" value="{{ service.id }}"> {{ service.service_name }}</label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Available days</label>
+                    <div class="checkbox-grid">
+                        {% for day in days %}
+                            <label><input type="checkbox" name="days" value="{{ day }}"> {{ day }}</label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6"><label class="form-label" for="start_time">Start time</label><input class="form-control" type="time" id="start_time" name="start_time" value="09:00"></div>
+                <div class="col-md-6"><label class="form-label" for="end_time">End time</label><input class="form-control" type="time" id="end_time" name="end_time" value="17:00"></div>
+                <div class="col-12"><button class="btn btn-primary" type="submit"><i class="bi bi-plus-circle"></i> Add Doctor</button></div>
+            </form>
+        </div>
+
+        <div class="row g-4">
+            {% for doctor in doctors %}
+                <div class="col-lg-4">
+                    <div class="doctor-card">
+                        <div class="doctor-avatar"><i class="bi bi-person-vcard"></i></div>
+                        <h3>{{ doctor.doctor_name }}</h3>
+                        <p>{{ doctor.specialization }}</p>
+                        <div class="mini-metrics">
+                            <span><i class="bi bi-star-fill"></i> {{ doctor.rating }}</span>
+                            <span><i class="bi bi-cash-coin"></i> ${{ "%.2f"|format(doctor.consultation_fee) }}</span>
+                        </div>
+                        <p class="small text-muted"><strong>Services:</strong> {{ doctor.services or "None mapped" }}</p>
+                        <p class="small text-muted"><strong>Availability:</strong> {{ doctor.availability or "Not added" }}</p>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-state"><i class="bi bi-person-plus"></i><p>No doctors added yet.</p></div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

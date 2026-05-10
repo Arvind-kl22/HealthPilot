@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Queue Management | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="page-heading">
+            <span class="section-kicker"><i class="bi bi-people"></i> Hospital admin</span>
+            <h1>Queue Management</h1>
+        </div>
+        <div class="table-shell">
+            {% if queues %}
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead><tr><th>Service</th><th>Current queue</th><th>Estimated wait</th><th>Updated</th><th>Update</th></tr></thead>
+                        <tbody>
+                        {% for queue in queues %}
+                            <tr>
+                                <form method="post">
+                                    <td>{{ queue.service_name }}<input type="hidden" name="service_id" value="{{ queue.service_id }}"></td>
+                                    <td><input class="form-control table-input" type="number" min="0" name="current_queue" value="{{ queue.current_queue }}"></td>
+                                    <td><input class="form-control table-input" type="number" min="0" name="estimated_waiting_time" value="{{ queue.estimated_waiting_time }}"></td>
+                                    <td>{{ queue.updated_at }}</td>
+                                    <td><button class="btn btn-sm btn-primary" type="submit"><i class="bi bi-save"></i> Save</button></td>
+                                </form>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state compact"><i class="bi bi-people"></i><p>No queue records. Assign services to doctors first.</p></div>
+            {% endif %}
+        </div>
+        <div class="form-shell wide-form mt-4">
+            <h2>Add Queue Record</h2>
+            <form method="post" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label" for="service_id">Service</label>
+                    <select class="form-select" id="service_id" name="service_id" required>
+                        {% for service in services %}
+                            <option value="{{ service.id }}">{{ service.service_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4"><label class="form-label" for="current_queue">Current queue</label><input class="form-control" type="number" min="0" id="current_queue" name="current_queue" value="0"></div>
+                <div class="col-md-4"><label class="form-label" for="estimated_waiting_time">Waiting time minutes</label><input class="form-control" type="number" min="0" id="estimated_waiting_time" name="estimated_waiting_time" value="15"></div>
+                <div class="col-12"><button class="btn btn-primary" type="submit"><i class="bi bi-plus-circle"></i> Save Queue</button></div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

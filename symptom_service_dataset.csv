@@ -1,0 +1,45 @@
+symptoms,service,first_aid
+fever cough cold body pain,General Physician,Drink fluids rest properly and monitor temperature
+i have fever cough cold and body ache,General Physician,Drink fluids rest properly and monitor temperature
+fevr couhg cold body pain,General Physician,Drink fluids rest properly and monitor temperature
+runny nose mild cough tiredness,General Physician,Drink warm fluids rest and monitor symptoms
+high fever headache weakness,Fever Clinic,Drink water rest and use cool cloth on forehead
+high temperature chills headache weakness,Fever Clinic,Drink water rest and use cool cloth on forehead
+fever weaknes headach body chills,Fever Clinic,Drink water rest and use cool cloth on forehead
+continuous fever with fatigue and headache,Fever Clinic,Drink water rest and check temperature regularly
+chest pain sweating breathing problem,Emergency,Emergency symptoms detected visit nearest hospital immediately
+shortness of breath severe chest tightness,Emergency,Emergency symptoms detected visit nearest hospital immediately
+unconscious heavy bleeding seizure,Emergency,Emergency symptoms detected visit nearest hospital immediately
+stroke signs face drooping severe weakness,Emergency,Emergency symptoms detected visit nearest hospital immediately
+tooth pain gum swelling,Dentist,Rinse mouth with warm salt water and avoid very hot or cold food
+toothache gum bleeding cavity pain,Dentist,Rinse mouth with warm salt water and avoid very hot or cold food
+tuth pain gum sweling,Dentist,Rinse mouth with warm salt water and avoid very hot or cold food
+pain in tooth while chewing,Dentist,Rinse mouth with warm salt water and avoid very hot or cold food
+eye pain redness blurred vision,Eye Specialist,Wash eyes with clean water and avoid rubbing
+red eyes watery eyes blurry vision,Eye Specialist,Wash eyes with clean water and avoid rubbing
+eye iritation blurred vison,Eye Specialist,Wash eyes with clean water and avoid rubbing
+pain in eyes with vision problem,Eye Specialist,Wash eyes with clean water and avoid rubbing
+skin rash itching allergy,Dermatologist,Keep area clean and avoid scratching
+itchy skin red patches allergy,Dermatologist,Keep area clean and avoid scratching
+skin rashes itchng alergic reaction,Dermatologist,Keep area clean and avoid scratching
+acne hives skin irritation,Dermatologist,Keep area clean and avoid scratching
+stomach pain vomiting acidity,Gastroenterologist,Eat light food avoid spicy food and drink water
+abdominal pain nausea vomiting,Gastroenterologist,Eat light food avoid spicy food and drink water
+stomch pain vomting loose motion,Gastroenterologist,Eat light food avoid spicy food and drink water
+gas acidity burning stomach pain,Gastroenterologist,Eat light food avoid spicy food and drink water
+bone pain swelling fracture,Orthopedic,Rest affected area and apply cold pack
+joint pain injury swelling,Orthopedic,Rest affected area and apply cold pack
+fractur bone swelling leg pain,Orthopedic,Rest affected area and apply cold pack
+sprain knee pain back pain,Orthopedic,Rest affected area and apply cold pack
+ear pain hearing problem,ENT Specialist,Drink warm water and avoid putting anything in ear
+earache throat pain blocked nose,ENT Specialist,Drink warm water and avoid putting anything in ear
+hearing loss ear infection pain,ENT Specialist,Drink warm water and avoid putting anything in ear
+ear pan hearng problem sore throat,ENT Specialist,Drink warm water and avoid putting anything in ear
+pregnancy abdominal pain,Gynecologist,Take rest and consult doctor for proper checkup
+women health pregnancy checkup,Gynecologist,Take rest and consult doctor for proper checkup
+irregular periods menstrual pain,Gynecologist,Take rest and consult doctor for proper checkup
+pregnency stomach cramps women health,Gynecologist,Take rest and consult doctor for proper checkup
+fast heartbeat high blood pressure dizziness,Cardiologist,Rest in a comfortable position and avoid physical strain
+palpitations heart discomfort breathlessness,Cardiologist,Rest in a comfortable position and avoid physical strain
+high bp heart beat problem,Cardiologist,Rest in a comfortable position and avoid physical strain
+left arm pain heart discomfort sweating,Cardiologist,Rest in a comfortable position and avoid physical strain

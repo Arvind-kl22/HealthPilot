@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Hospital Register | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="form-shell wide-form">
+            <span class="section-kicker"><i class="bi bi-building-add"></i> Hospital onboarding</span>
+            <h1>Register Hospital</h1>
+            <form method="post" class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="admin_name">Admin name</label>
+                    <input class="form-control" id="admin_name" name="admin_name" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="phone">Admin phone</label>
+                    <input class="form-control" id="phone" name="phone">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="email">Admin email</label>
+                    <input class="form-control" type="email" id="email" name="email" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="password">Password</label>
+                    <input class="form-control" type="password" id="password" name="password" minlength="6" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="hospital_name">Hospital name</label>
+                    <input class="form-control" id="hospital_name" name="hospital_name" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="city">City</label>
+                    <input class="form-control" id="city" name="city" required>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="address">Address</label>
+                    <input class="form-control" id="address" name="address" required>
+                </div>
+                <div class="col-12">
+                    <div class="hospital-register-map-shell">
+                        <div class="hospital-register-map-head">
+                            <div>
+                                <h2>Select Hospital Location</h2>
+                                <p>Click on the map or use current location to fill latitude and longitude.</p>
+                            </div>
+                            <button class="btn btn-outline-primary" type="button" id="useHospitalCurrentLocation"><i class="bi bi-crosshair"></i> Use Current Location</button>
+                        </div>
+                        <div id="hospitalRegisterLocationStatus" class="location-banner">
+                            <i class="bi bi-info-circle"></i>
+                            <span>Select the hospital point on the map.</span>
+                        </div>
+                        <div id="hospitalRegisterMap" class="hospital-register-map"></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="latitude">Latitude</label>
+                    <input class="form-control" type="number" step="any" id="latitude" name="latitude" placeholder="Select from map" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="longitude">Longitude</label>
+                    <input class="form-control" type="number" step="any" id="longitude" name="longitude" placeholder="Select from map" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="contact">Hospital contact</label>
+                    <input class="form-control" id="contact" name="contact">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="opening_time">Opening time</label>
+                    <input class="form-control" type="time" id="opening_time" name="opening_time" value="09:00">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="closing_time">Closing time</label>
+                    <input class="form-control" type="time" id="closing_time" name="closing_time" value="18:00">
+                </div>
+                <div class="col-12">
+                    <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Submit for Approval</button>
+                    <a class="btn btn-outline-primary" href="{{ url_for('hospital_login') }}">Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+window.HealthPilotHospitalRegisterMap = {
+    mapplsEnabled: {{ (mappls_web_api_key|length > 0)|tojson }},
+    defaultCenter: [28.6139, 77.2090]
+};
+</script>
+{% if mappls_web_api_key %}
+<script src="https://sdk.mappls.com/map/sdk/web?v=3.0&access_token={{ mappls_web_api_key }}"></script>
+{% endif %}
+<script src="{{ url_for('static', filename='js/hospital_register_map.js') }}"></script>
+{% endblock %}

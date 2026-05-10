@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Patient Dashboard | HealthPilot{% endblock %}
+{% block content %}
+<section class="patient-dashboard-page">
+    <div class="container">
+        <div class="patient-dashboard-hero">
+            <div>
+                <span class="section-kicker"><i class="bi bi-person-heart"></i> Patient dashboard</span>
+                <h1>Welcome, {{ current_user.name }}</h1>
+                <p>Find the right medical service, compare hospitals, book a token, and navigate from your saved location.</p>
+            </div>
+            <div class="patient-location-status">
+                {% if patient_location %}
+                    <i class="bi bi-geo-alt-fill"></i>
+                    <div>
+                        <span>Active location</span>
+                        <strong>{{ patient_location.source|title }}: {{ "%.5f"|format(patient_location.lat) }}, {{ "%.5f"|format(patient_location.lng) }}</strong>
+                        <a href="{{ url_for('patient_location') }}">Change location</a>
+                    </div>
+                {% else %}
+                    <i class="bi bi-geo-alt"></i>
+                    <div>
+                        <span>Location needed</span>
+                        <strong>Set your location for accurate route and ranking.</strong>
+                        <a href="{{ url_for('patient_location') }}">Set location</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="patient-metrics-grid">
+            <div class="patient-metric">
+                <div class="patient-metric-icon"><i class="bi bi-calendar2-check"></i></div>
+                <div>
+                    <span>Total appointments</span>
+                    <strong>{{ totals.total or 0 }}</strong>
+                </div>
+            </div>
+            <div class="patient-metric">
+                <div class="patient-metric-icon patient-metric-warning"><i class="bi bi-hourglass-split"></i></div>
+                <div>
+                    <span>Pending requests</span>
+                    <strong>{{ totals.pending or 0 }}</strong>
+                </div>
+            </div>
+            <div class="patient-metric">
+                <div class="patient-metric-icon patient-metric-success"><i class="bi bi-check2-circle"></i></div>
+                <div>
+                    <span>Completed visits</span>
+                    <strong>{{ totals.completed or 0 }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="patient-workspace">
+            <div class="patient-ai-panel">
+                <div class="patient-panel-heading">
+                    <div>
+                        <span class="section-kicker"><i class="bi bi-stars"></i> AI service guidance</span>
+                        <h2>Describe your symptoms</h2>
+                        <p>HealthPilot recommends a medical service, gives basic first-aid guidance, and finds matching hospitals.</p>
+                    </div>
+                </div>
+                <form class="patient-symptom-form" method="post" action="{{ url_for('predict_service') }}">
+                    <textarea class="form-control" name="symptoms" rows="5" placeholder="Example: I have high fever, headache, weakness and body pain" required></textarea>
+                    <div class="patient-form-actions">
+                        <button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-stars"></i> Suggest Medical Service</button>
+                        <a class="btn btn-outline-primary btn-lg" href="{{ url_for('symptom_input') }}"><i class="bi bi-pencil-square"></i> Open Symptom Page</a>
+                    </div>
+                </form>
+            </div>
+
+            <aside class="patient-quick-panel">
+                <div class="patient-panel-heading compact">
+                    <h2>Quick Actions</h2>
+                    <p>Common patient tasks</p>
+                </div>
+                <div class="patient-quick-actions">
+                    <a href="{{ url_for('patient_location') }}">
+                        <i class="bi bi-crosshair"></i>
+                        <span>{{ "Change Location" if patient_location else "Set Location" }}</span>
+                    </a>
+                    <a href="{{ url_for('patient_appointments') }}">
+                        <i class="bi bi-calendar2-check"></i>
+                        <span>Appointment History</span>
+                    </a>
+                    <a href="{{ url_for('symptom_input') }}">
+                        <i class="bi bi-clipboard2-pulse"></i>
+                        <span>Symptom Page</span>
+                    </a>
+                </div>
+                <div class="patient-care-note">
+                    <i class="bi bi-shield-exclamation"></i>
+                    <p>For severe symptoms like chest pain, breathing difficulty, heavy bleeding, or unconsciousness, seek emergency care immediately.</p>
+                </div>
+            </aside>
+        </div>
+
+        <div class="patient-appointments-panel">
+            <div class="patient-panel-heading appointment-heading">
+                <div>
+                    <span class="section-kicker"><i class="bi bi-calendar2-week"></i> Recent activity</span>
+                    <h2>Recent Appointments</h2>
+                </div>
+                <a class="btn btn-outline-primary" href="{{ url_for('patient_appointments') }}"><i class="bi bi-arrow-right"></i> View All</a>
+            </div>
+            {% if appointments %}
+                <div class="table-responsive">
+                    <table class="table align-middle patient-appointment-table">
+                        <thead>
+                        <tr>
+                            <th>Token</th>
+                            <th>Hospital</th>
+                            <th>Doctor</th>
+                            <th>Service</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in appointments %}
+                            <tr>
+                                <td><span class="token-chip">{{ item.token_number }}</span></td>
+                                <td>
+                                    <strong>{{ item.hospital_name }}</strong>
+                                    <span class="table-subtext">Hospital</span>
+                                </td>
+                                <td>
+                                    {{ item.doctor_name }}
+                                    <span class="table-subtext">Doctor</span>
+                                </td>
+                                <td>{{ item.service_name }}</td>
+                                <td>
+                                    {{ item.appointment_date|date_input }}
+                                    <span class="table-subtext">{{ item.appointment_time|time_input }}</span>
+                                </td>
+                                <td><span class="status-pill status-{{ item.status }}">{{ item.status|title }}</span></td>
+                                <td><a class="btn btn-sm btn-outline-primary" href="{{ url_for('appointment_route', appointment_id=item.id) }}"><i class="bi bi-signpost-2"></i> Route</a></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-calendar2-plus"></i>
+                    <p>No appointments yet.</p>
+                    <a class="btn btn-primary" href="{{ url_for('symptom_input') }}"><i class="bi bi-plus-circle"></i> Find Care</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

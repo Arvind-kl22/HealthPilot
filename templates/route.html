@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Route Navigation | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="page-heading split-heading">
+            <div>
+                <span class="section-kicker"><i class="bi bi-signpost-2"></i> Navigation</span>
+                <h1>{{ appointment.hospital_name }}</h1>
+                <p class="text-muted">Token {{ appointment.token_number }} · {{ appointment.service_name }} · {{ appointment.status|title }}</p>
+                {% if patient_location %}
+                    <p class="small text-muted mb-0">Route starts from saved {{ patient_location.source }} location: {{ "%.5f"|format(patient_location.lat) }}, {{ "%.5f"|format(patient_location.lng) }}</p>
+                {% endif %}
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-outline-primary" href="{{ url_for('patient_location') }}"><i class="bi bi-geo-alt"></i> Change Location</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('patient_appointments') }}"><i class="bi bi-calendar2-check"></i> Appointments</a>
+            </div>
+        </div>
+
+        <div class="route-summary">
+            <span><i class="bi bi-geo-alt"></i> <strong id="routeDistance">--</strong> km</span>
+            <span><i class="bi bi-clock-history"></i> <strong id="routeDuration">--</strong> min</span>
+            <a id="openNavigation" class="btn btn-primary" href="#" target="_blank" rel="noreferrer"><i class="bi bi-map"></i> Open Navigation</a>
+        </div>
+
+        <div id="routeMap" class="route-map"></div>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+window.HealthPilotRoute = {
+    hospitalName: {{ appointment.hospital_name|tojson }},
+    hospitalLat: {{ appointment.latitude }},
+    hospitalLng: {{ appointment.longitude }},
+    defaultCenter: [40.758, -73.9855],
+    mapplsEnabled: {{ (mappls_web_api_key|length > 0)|tojson }},
+    patientLocation: {{ patient_location|tojson }}
+};
+</script>
+{% if mappls_web_api_key %}
+<script src="https://sdk.mappls.com/map/sdk/web?v=3.0&access_token={{ mappls_web_api_key }}"></script>
+{% endif %}
+<script src="{{ url_for('static', filename='js/route.js') }}"></script>
+{% endblock %}
