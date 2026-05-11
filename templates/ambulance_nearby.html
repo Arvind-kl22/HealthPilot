@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Nearby Ambulances{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-danger"><i class="bi bi-truck"></i> Nearby Available Ambulances</h2>
+    {% if ambulances and ambulances|length > 0 %}
+        <div class="list-group mb-4">
+            {% for amb in ambulances %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Ambulance #{{ amb.id }}</strong> ({{ amb.hospital_name }})<br>
+                            <span class="text-muted">{{ amb.distance }} km away</span>
+                        </div>
+                        <form method="post" action="{{ url_for('ambulance_book', ambulance_id=amb.id) }}">
+                            <input type="hidden" name="request_id" value="{{ amb.request_id }}">
+                            <button type="submit" class="btn btn-success">Book</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-warning">No ambulances available nearby at the moment.</div>
+    {% endif %}
+    <a href="/" class="btn btn-secondary">Back to Home</a>
+</div>
+{% endblock %}

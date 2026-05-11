@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Emergency Ambulance Request{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-danger"><i class="bi bi-truck"></i> Emergency Ambulance Request</h2>
+    <form id="ambulance-request-form" method="post" action="{{ url_for('ambulance_request') }}">
+        <div class="mb-3">
+            <label for="patient_name" class="form-label">Patient Name</label>
+            <input type="text" class="form-control" id="patient_name" name="patient_name" required>
+        </div>
+        <div class="mb-3">
+            <label for="mobile_number" class="form-label">Mobile Number</label>
+            <input type="tel" class="form-control" id="mobile_number" name="mobile_number" required pattern="[0-9]{10,15}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Location</label>
+            <div id="maple-map" style="height: 300px;"></div>
+            <input type="hidden" id="latitude" name="latitude">
+            <input type="hidden" id="longitude" name="longitude">
+        </div>
+        <button type="submit" class="btn btn-danger btn-lg w-100">Request Ambulance</button>
+    </form>
+</div>
+<script src="https://maple-maps.com/api/js"></script>
+<script src="{{ url_for('static', filename='js/ambulance_location.js') }}"></script>
+{% endblock %}

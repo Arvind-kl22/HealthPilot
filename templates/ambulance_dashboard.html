@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Ambulance Driver Dashboard{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-primary"><i class="bi bi-truck"></i> Ambulance Driver Dashboard</h2>
+    <div class="mb-4">
+        <strong>Welcome, {{ driver.name }} ({{ driver.vehicle_number }})</strong>
+    </div>
+    <h4>Incoming Requests</h4>
+    {% if requests and requests|length > 0 %}
+        <div class="list-group mb-4">
+            {% for req in requests %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Patient:</strong> {{ req.patient_name }}<br>
+                            <strong>Mobile:</strong> {{ req.mobile_number }}<br>
+                            <strong>Location:</strong> <a href="https://maple-maps.com/?lat={{ req.latitude }}&lng={{ req.longitude }}" target="_blank">View on Map</a>
+                        </div>
+                        <form method="post" action="{{ url_for('ambulance_accept', request_id=req.id) }}">
+                            <button type="submit" class="btn btn-success">Accept</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">No new requests at the moment.</div>
+    {% endif %}
+    <h4>Current Assignment</h4>
+    {% if current_assignment %}
+        <div class="card card-body mb-4">
+            <strong>Patient:</strong> {{ current_assignment.patient_name }}<br>
+            <strong>Mobile:</strong> {{ current_assignment.mobile_number }}<br>
+            <strong>Location:</strong> <a href="https://maple-maps.com/?lat={{ current_assignment.latitude }}&lng={{ current_assignment.longitude }}" target="_blank">Navigate</a>
+            <div class="mt-2">
+                <span class="badge bg-success">Active</span>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-secondary">No active assignment.</div>
+    {% endif %}
+</div>
+{% endblock %}

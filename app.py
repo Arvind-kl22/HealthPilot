@@ -1,17 +1,20 @@
-import binascii
+
+
+# --- Flask and SocketIO setup ---
+import os
+import datetime
 import datetime as dt
+import binascii
 import functools
 import hashlib
 import hmac
 import json
 import math
-import os
 import secrets
 import socket
 import urllib.error
 import urllib.parse
 import urllib.request
-
 from flask import (
     Flask,
     flash,
@@ -23,16 +26,193 @@ from flask import (
     session,
     url_for,
 )
+from flask_socketio import SocketIO, emit, join_room, leave_room
 import mysql.connector
 from mysql.connector import Error, IntegrityError
-
 from ai_service import AIServiceError, predict_medical_service
-
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "healthpilot-dev-secret-change-me")
+socketio = SocketIO(app)
+
+# Patient books ambulance (assigns ambulance to request)
+@app.route('/ambulance/book/<int:ambulance_id>', methods=['POST'])
+def ambulance_book(ambulance_id):
+    request_id = request.form.get('request_id')
+    connection = get_connection()
+    cursor = connection.cursor()
+    try:
+        # Assign ambulance to request
+        cursor.execute("""
+            UPDATE ambulance_requests
+            SET assigned_ambulance_id = %s, status = 'assigned'
+            WHERE id = %s
+        """, (ambulance_id, request_id))
+        # Set ambulance status to busy
+        cursor.execute("""
+            UPDATE ambulances SET status = 'busy' WHERE id = %s
+        """, (ambulance_id,))
+        connection.commit()
+        flash('Ambulance booked! Driver will contact you soon.', 'success')
+    except Exception as e:
+        connection.rollback()
+        flash(f'Error booking ambulance: {e}', 'danger')
+    finally:
+        cursor.close()
+        connection.close()
+    return redirect(url_for('home'))
+
+# Ambulance Driver Dashboard
+@app.route('/ambulance/driver/<int:driver_id>', methods=['GET'])
+def ambulance_dashboard(driver_id):
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
+    driver = None
+    requests = []
+    current_assignment = None
+    try:
+        # Get driver and ambulance info
+        cursor.execute("""
+            SELECT d.id as driver_id, d.name, d.phone, a.id as ambulance_id, a.vehicle_number
+            FROM ambulance_drivers d
+            JOIN ambulances a ON d.ambulance_id = a.id
+            WHERE d.id = %s
+        """, (driver_id,))
+        driver = cursor.fetchone()
+        if not driver:
+            flash("Driver not found.", "danger")
+            return redirect(url_for('home'))
+
+        # Get pending requests for this ambulance
+        cursor.execute("""
+            SELECT * FROM ambulance_requests
+            WHERE status = 'pending'
+            ORDER BY request_time ASC
+        """)
+        requests = cursor.fetchall()
+
+        # Get current assignment (if any)
+        cursor.execute("""
+            SELECT * FROM ambulance_requests
+            WHERE assigned_ambulance_id = %s AND status = 'assigned'
+            ORDER BY request_time DESC LIMIT 1
+        """, (driver['ambulance_id'],))
+        current_assignment = cursor.fetchone()
+    finally:
+        cursor.close()
+        connection.close()
+    return render_template('ambulance_dashboard.html', driver=driver, requests=requests, current_assignment=current_assignment)
+
+
+# Emergency Ambulance Request (no login required)
+@app.route('/ambulance/request', methods=['GET', 'POST'])
+def ambulance_request():
+    if request.method == 'POST':
+        patient_name = request.form.get('patient_name')
+        mobile_number = request.form.get('mobile_number')
+        latitude = request.form.get('latitude')
+        longitude = request.form.get('longitude')
+        request_time = datetime.datetime.now()
+        # Save request to DB
+        connection = get_connection()
+        cursor = connection.cursor()
+        try:
+            cursor.execute("""
+                INSERT INTO ambulance_requests (patient_name, mobile_number, latitude, longitude, request_time, status)
+                VALUES (%s, %s, %s, %s, %s, 'pending')
+            """, (patient_name, mobile_number, latitude, longitude, request_time))
+            connection.commit()
+        except Exception as e:
+            connection.rollback()
+            flash(f'Error saving ambulance request: {e}', 'danger')
+            return redirect(url_for('ambulance_request'))
+        finally:
+            cursor.close()
+            connection.close()
+        flash('Ambulance request submitted! Showing nearby ambulances...', 'success')
+        return redirect(url_for('ambulance_nearby', lat=latitude, lng=longitude))
+    return render_template('ambulance_request.html')
+
+# Show nearby ambulances and hospitals
+@app.route('/ambulance/nearby')
+def ambulance_nearby():
+    lat = request.args.get('lat', type=float)
+    lng = request.args.get('lng', type=float)
+    ambulances = []
+    if lat is not None and lng is not None:
+        try:
+            connection = get_connection()
+            cursor = connection.cursor(dictionary=True)
+            # Find available ambulances within 10km radius, sorted by distance
+            query = '''
+                SELECT a.id, a.driver_name, a.driver_phone, a.vehicle_number, a.latitude, a.longitude, a.status,
+                       h.hospital_name,
+                       (6371 * ACOS(
+                           COS(RADIANS(%s)) * COS(RADIANS(a.latitude)) *
+                           COS(RADIANS(a.longitude) - RADIANS(%s)) +
+                           SIN(RADIANS(%s)) * SIN(RADIANS(a.latitude))
+                       )) AS distance
+                FROM ambulances a
+                JOIN hospitals h ON a.hospital_id = h.id
+                WHERE a.status = 'available' AND a.latitude IS NOT NULL AND a.longitude IS NOT NULL
+                HAVING distance < 10
+                ORDER BY distance ASC
+                LIMIT 10
+            '''
+            cursor.execute(query, (lat, lng, lat))
+            ambulances = cursor.fetchall()
+        except Exception as e:
+            flash(f"Error fetching ambulances: {e}", "danger")
+        finally:
+            if 'cursor' in locals():
+                cursor.close()
+            if 'connection' in locals():
+                connection.close()
+    return render_template('ambulance_nearby.html', ambulances=ambulances, lat=lat, lng=lng)
+
+# --- Real-time tracking and notifications ---
+# Driver updates ambulance location (called from driver app/dashboard)
+@app.route('/ambulance/update_location', methods=['POST'])
+def ambulance_update_location():
+    ambulance_id = request.form.get('ambulance_id')
+    latitude = request.form.get('latitude')
+    longitude = request.form.get('longitude')
+    # Update ambulance location in DB
+    connection = get_connection()
+    cursor = connection.cursor()
+    try:
+        cursor.execute("""
+            UPDATE ambulances SET latitude = %s, longitude = %s, last_update = NOW() WHERE id = %s
+        """, (latitude, longitude, ambulance_id))
+        connection.commit()
+        # Emit real-time update to all clients in the ambulance room
+        socketio.emit('ambulance_location', {
+            'ambulance_id': ambulance_id,
+            'latitude': latitude,
+            'longitude': longitude
+        }, room=f"ambulance_{ambulance_id}")
+    finally:
+        cursor.close()
+        connection.close()
+    return ('', 204)
+
+# Patient/driver join ambulance room for live updates
+@socketio.on('join_ambulance_room')
+def handle_join_ambulance_room(data):
+    ambulance_id = data.get('ambulance_id')
+    join_room(f"ambulance_{ambulance_id}")
+
+# In-app notification event (for booking, assignment, etc.)
+def send_notification(user_type, user_id, message):
+    # user_type: 'driver', 'hospital', 'patient'
+    # user_id: driver_id, hospital_id, or request_id
+    socketio.emit('notification', {
+        'user_type': user_type,
+        'user_id': user_id,
+        'message': message
+    }, room=f"notify_{user_type}_{user_id}")
 
 DB_CONFIG = {
     "host": os.environ.get("MYSQL_HOST", "localhost"),

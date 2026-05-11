@@ -8,6 +8,7 @@
             <h1>HealthPilot</h1>
             <p>Connect symptoms, hospital availability, live queues, appointments, and Mappls navigation in one clean healthcare access platform.</p>
             <div class="hero-actions">
+                <a class="btn btn-danger btn-lg" href="{{ url_for('ambulance_request') }}"><i class="bi bi-truck"></i> Emergency Ambulance</a>
                 {% if current_user and current_user.role == 'patient' %}
                     <a class="btn btn-light btn-lg" href="{{ url_for('symptom_input') }}"><i class="bi bi-stars"></i> Find Care</a>
                     <a class="btn btn-outline-light btn-lg" href="{{ url_for('patient_location') }}"><i class="bi bi-geo-alt"></i> Set Location</a>

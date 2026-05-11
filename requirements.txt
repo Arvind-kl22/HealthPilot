@@ -4,3 +4,10 @@ sentence-transformers
 scikit-learn
 pandas
 joblib
+numpy
+torch
+python-dateutil
+Werkzeug
+Jinja2
+itsdangerous
+MarkupSafe
