@@ -40,6 +40,12 @@
                     <input class="form-control" id="contact" name="contact" value="{{ hospital.contact }}">
                 </div>
                 <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="aayushman_accepted" name="aayushman_accepted" value="1" {% if hospital.aayushman_accepted %}checked{% endif %}>
+                        <label class="form-check-label" for="aayushman_accepted">Accept Aayushman Card</label>
+                    </div>
+                </div>
+                <div class="col-12">
                     <button class="btn btn-primary" type="submit"><i class="bi bi-save"></i> Save Profile</button>
                 </div>
             </form>

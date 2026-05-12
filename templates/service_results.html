@@ -103,6 +103,9 @@
                                         <div>
                                             <h2>{{ hospital.hospital_name }}</h2>
                                             <p class="small text-muted mb-0">{{ hospital.address }}, {{ hospital.city }}</p>
+                                            {% if hospital.aayushman_accepted %}
+                                                <span class="badge bg-success mt-1">Aayushman Card Accepted</span>
+                                            {% endif %}
                                         </div>
                                         {% if loop.first %}<span class="hospital-badge">Best match</span>{% endif %}
                                     </div>

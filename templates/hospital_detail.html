@@ -20,6 +20,9 @@
             <span><i class="bi bi-telephone"></i> {{ hospital.contact }}</span>
             <span><i class="bi bi-clock"></i> {{ hospital.opening_time|time_input }} - {{ hospital.closing_time|time_input }}</span>
             <span><i class="bi bi-clipboard2-pulse"></i> {{ service.service_name }}</span>
+            {% if hospital.aayushman_accepted %}
+                <span><i class="bi bi-card-checklist"></i> Aayushman Card accepted</span>
+            {% endif %}
             {% if queue %}
                 <span><i class="bi bi-people"></i> Queue {{ queue.current_queue }}</span>
                 <span><i class="bi bi-hourglass-split"></i> {{ queue.estimated_waiting_time }} min wait</span>

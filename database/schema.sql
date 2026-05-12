@@ -18,7 +18,13 @@ CREATE TABLE IF NOT EXISTS hospitals (
     address VARCHAR(255) NOT NULL,
     city VARCHAR(100) NOT NULL,
     latitude DECIMAL(10, 7) NOT NULL,
-    longitude DECIMAL(10, 7) NOT NULL
+    longitude DECIMAL(10, 7) NOT NULL,
+    contact VARCHAR(80),
+    opening_time TIME DEFAULT '09:00',
+    closing_time TIME DEFAULT '18:00',
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    aayushman_accepted TINYINT(1) DEFAULT 0,
+    rating DECIMAL(3, 2) DEFAULT 4.00
 );
 
 CREATE TABLE IF NOT EXISTS departments (

@@ -88,7 +88,7 @@
             new mappls.Marker({
                 map,
                 position: { lat: hospital.latitude, lng: hospital.longitude },
-                popupHtml: `<strong>${escapeHtml(hospital.hospital_name)}</strong><br>${escapeHtml(hospital.service_name)}<br>${hospital.travel_time_minutes || "--"} min travel`,
+                popupHtml: `<strong>${escapeHtml(hospital.hospital_name)}</strong><br>${escapeHtml(hospital.service_name)}<br>${hospital.travel_time_minutes || "--"} min travel${hospital.aayushman_accepted ? '<br><strong>Aayushman accepted</strong>' : ''}`,
                 popupOptions: { openPopup: index === 0, autoClose: true }
             });
         });
@@ -111,6 +111,7 @@
                         <div>
                             <h2>${escapeHtml(hospital.hospital_name)}</h2>
                             <p class="small text-muted mb-0">${escapeHtml(hospital.address)}, ${escapeHtml(hospital.city)}</p>
+                            ${hospital.aayushman_accepted ? `<span class="badge bg-success mt-1">Aayushman Card Accepted</span>` : ""}
                         </div>
                         ${best ? `<span class="hospital-badge">Best match</span>` : ""}
                     </div>

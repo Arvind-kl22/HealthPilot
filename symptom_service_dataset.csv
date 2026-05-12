@@ -1,45 +1,148 @@
 symptoms,service,first_aid
-fever cough cold body pain,General Physician,Drink fluids rest properly and monitor temperature
-i have fever cough cold and body ache,General Physician,Drink fluids rest properly and monitor temperature
-fevr couhg cold body pain,General Physician,Drink fluids rest properly and monitor temperature
-runny nose mild cough tiredness,General Physician,Drink warm fluids rest and monitor symptoms
-high fever headache weakness,Fever Clinic,Drink water rest and use cool cloth on forehead
-high temperature chills headache weakness,Fever Clinic,Drink water rest and use cool cloth on forehead
-fever weaknes headach body chills,Fever Clinic,Drink water rest and use cool cloth on forehead
-continuous fever with fatigue and headache,Fever Clinic,Drink water rest and check temperature regularly
-chest pain sweating breathing problem,Emergency,Emergency symptoms detected visit nearest hospital immediately
-shortness of breath severe chest tightness,Emergency,Emergency symptoms detected visit nearest hospital immediately
-unconscious heavy bleeding seizure,Emergency,Emergency symptoms detected visit nearest hospital immediately
-stroke signs face drooping severe weakness,Emergency,Emergency symptoms detected visit nearest hospital immediately
-tooth pain gum swelling,Dentist,Rinse mouth with warm salt water and avoid very hot or cold food
-toothache gum bleeding cavity pain,Dentist,Rinse mouth with warm salt water and avoid very hot or cold food
-tuth pain gum sweling,Dentist,Rinse mouth with warm salt water and avoid very hot or cold food
-pain in tooth while chewing,Dentist,Rinse mouth with warm salt water and avoid very hot or cold food
-eye pain redness blurred vision,Eye Specialist,Wash eyes with clean water and avoid rubbing
-red eyes watery eyes blurry vision,Eye Specialist,Wash eyes with clean water and avoid rubbing
-eye iritation blurred vison,Eye Specialist,Wash eyes with clean water and avoid rubbing
-pain in eyes with vision problem,Eye Specialist,Wash eyes with clean water and avoid rubbing
-skin rash itching allergy,Dermatologist,Keep area clean and avoid scratching
-itchy skin red patches allergy,Dermatologist,Keep area clean and avoid scratching
-skin rashes itchng alergic reaction,Dermatologist,Keep area clean and avoid scratching
-acne hives skin irritation,Dermatologist,Keep area clean and avoid scratching
-stomach pain vomiting acidity,Gastroenterologist,Eat light food avoid spicy food and drink water
-abdominal pain nausea vomiting,Gastroenterologist,Eat light food avoid spicy food and drink water
-stomch pain vomting loose motion,Gastroenterologist,Eat light food avoid spicy food and drink water
-gas acidity burning stomach pain,Gastroenterologist,Eat light food avoid spicy food and drink water
-bone pain swelling fracture,Orthopedic,Rest affected area and apply cold pack
-joint pain injury swelling,Orthopedic,Rest affected area and apply cold pack
-fractur bone swelling leg pain,Orthopedic,Rest affected area and apply cold pack
-sprain knee pain back pain,Orthopedic,Rest affected area and apply cold pack
-ear pain hearing problem,ENT Specialist,Drink warm water and avoid putting anything in ear
-earache throat pain blocked nose,ENT Specialist,Drink warm water and avoid putting anything in ear
-hearing loss ear infection pain,ENT Specialist,Drink warm water and avoid putting anything in ear
-ear pan hearng problem sore throat,ENT Specialist,Drink warm water and avoid putting anything in ear
-pregnancy abdominal pain,Gynecologist,Take rest and consult doctor for proper checkup
-women health pregnancy checkup,Gynecologist,Take rest and consult doctor for proper checkup
-irregular periods menstrual pain,Gynecologist,Take rest and consult doctor for proper checkup
-pregnency stomach cramps women health,Gynecologist,Take rest and consult doctor for proper checkup
-fast heartbeat high blood pressure dizziness,Cardiologist,Rest in a comfortable position and avoid physical strain
-palpitations heart discomfort breathlessness,Cardiologist,Rest in a comfortable position and avoid physical strain
-high bp heart beat problem,Cardiologist,Rest in a comfortable position and avoid physical strain
-left arm pain heart discomfort sweating,Cardiologist,Rest in a comfortable position and avoid physical strain
+fever cough cold body pain,General Physician,Drink plenty fluids paracetamol rest monitor temp
+bukhhar khansi jukham body dard,General Physician,Pani zyada piye paracetamol aaram kare temperature check kare
+fevr couhg cold body pain,General Physician,Liquids piye rest kare paracetamol temperature monitor
+mild fever sore throat runny nose,General Physician,Steam inhalation warm water honey lozenges
+halki bukhar gala kharab baha nikal raha,General Physician,Bhaap le warm pani honey gargle namak pani
+headache mild fever body ache,General Physician,Paracetamol rest dark room hydration
+sir dard bukhar halka body pain,General Physician,Paracetamol aaram andhera kamra pani
+severe headache vomiting vision blur,Neurologist,Immediate rest dark room medical attention
+tez sir dard ulti nazar dhundla,Neurologist,Turanto andhera kamra rest doctor ke paas
+stomach pain diarrhea fever nausea,Gastroenterologist,ORS solution bland diet hydration rest
+pet dard dast bukhar ulti,Gastroenterologist,ORS solution halka khana pani rest
+chest pain shortness breath sweating,Emergency,Call 108 immediately aspirin if available sit upright
+seene mein dard saans phool rahi paseena,Emergency,108 call kare aspirin ho to le baith jaye
+chest pain left arm radiation,Emergency,Immediate emergency aspirin chew call ambulance
+seene mein dard baaye haath mein,Emergency,Turanto emergency aspirin chew ambulance
+itchy rash red swelling hives,Dermatologist,Antihistamine cool compress avoid scratching
+khujli daane laal sujan,Dermatologist,Antihistamine thanda sek avoid khujli
+severe rash breathing difficulty,Emergency,Epinephrine if available call 108 immediately
+tez khujli saans lene mein dikkat,Emergency,Injection ho to lagaye 108 turant
+sore throat fever white patches tonsils,ENT Specialist,Salt water gargle lozenges hydration
+gala mein dard bukhar safed daane,ENT Specialist,Namak pani se kule lozenges pani
+ear pain fever discharge,ENT Specialist,Warm compress keep dry antibiotics needed
+kaan dard bukhar pani nikalta,ENT Specialist,Garam sek rakhe sukhha antibiotic chahiye
+back pain radiating leg numbness,Orthopedician,Rest hot compress avoid bending neuro consult
+peeth dard paon mein sunn jhanjhanahat,Orthopedician,Aaram garam sek na jhuke neuro doctor
+neck pain arm tingling weakness,Orthopedician,Soft collar rest neuro consult
+gardaan dard haath sunn,Orthopedician,Soft collar aaram neuro consult
+burning urination frequent urgency,Urologist,Plenty water cranberry juice antibiotics
+peshab mein jalan baar baar aata,Urologist,Bahut pani cranberry antibiotics
+blood in urine pain fever,Urologist,Emergency urology consult hydration
+peshab mein khoon dard bukhar,Urologist,Emergency urology turant pani
+joint pain swelling morning stiffness,Rheumatologist,Rest ice elevation rheumatology consult
+jodon mein dard sujan subah akdan,Rheumatologist,Aaram barf sek rheumatologist
+knee pain swelling can't bear weight,Orthopedician,RICE protocol ortho consult xray
+ghutne mein dard sujan wazan nahi dharr sakta,Orthopedician,RICE ortho xray
+shoulder pain can't lift arm,Orthopedician,Sling ice rest physio ortho consult
+kandhe mein dard haath nahi uth raha,Orthopedician,Sling barf aaram physio
+ankle sprain swelling pain,Orthopedician,RICE elevate crepe bandage
+pairo ka mooh mud gaya sujan,Orthopedician,RICE buland rakhe crepe
+fracture deformity severe pain,Orthopedician,Immobilize emergency ortho xray
+haddi tooti shape bigdi tez dard,Orthopedician,Hilaye na emergency ortho xray
+tooth pain swelling gum abscess,Dentist,Warm salt rinse clove oil dental emergency
+daant mein dard sujan pus,Dentist,Namak pani kule laung oil dental turant
+eye pain redness photophobia,Opthalmologist,Avoid light cold compress eye specialist
+aankh dard laal roshni se dard,Opthalmologist,Roshni se bache thanda sek eye doctor
+vision loss sudden floaters,Opthalmologist,Emergency retina consult
+nazar ekdum kam floaters,Opthalmologist,Emergency retina turant
+dizziness vertigo vomiting,Neurologist,Lie flat hydrate ENT/neuro consult
+chakkar aana ulanti,Neurologist,Sidha let jaye pani ENT/neuro
+high fever 103+ stiff neck,Emergency,Meningitis protocol immediate hospital
+103+ bukhar gardan kaak,Emergency,Meningitis emergency hospital turant
+seizure convulsions loss consciousness,Emergency,Protect airway time seizure emergency
+mirgi daant kaatna behosh,Emergency,Time kare protect airway emergency
+stroke face droop speech slurred,Emergency,FAST protocol call 108 immediately
+stroke chehra jhuka bol nahi,Emergency,FAST 108 turant
+confusion disoriented sudden,Neurologist/Emergency,Immediate neuro evaluation
+ekdum confusion rasta bhula,Neurologist/Emergency,Turanto neuro check
+abdominal pain severe vomiting blood,Gastroenterologist/Emergency,NG tube NPO surgical consult
+pet mein tez dard khoon ki ulti,Gastroenterologist/Emergency,NG tube fasting surgery consult
+jaundice yellow skin eyes fever,Gastroenterologist,Rest avoid fats LFT tests
+piliya pila rang aankh bukhar,Gastroenterologist,Aaram tel chhode LFT test
+diarrhea bloody fever dehydration,Gastroenterologist/Emergency,ORS IV fluids stool culture
+dast khooni bukhar pani ki kami,Gastroenterologist/Emergency,ORS IV pani culture
+constipation severe abdominal pain,Gastroenterologist,Lactulose enema surgical consult if no relief
+kabj tez pet dard,Gastroenterologist,Lactulose enema surgery agar na aaye
+vomiting persistent can't keep water down,General Physician,Small sips ORS antiemetics
+ulti ruk nahi pani nahi rukta,General Physician,Thoda thoda ORS injection
+cough productive green sputum fever,Pulmonologist,Steam hydration antibiotics chest xray
+khansi balgam hara bukhar,Pulmonologist,Bhaap pani antibiotics xray
+wheezing shortness breath nocturnal,Pulmonologist,Inhaler nebulizer pulmonary consult
+saans phoolna raat mein dikkat,Pulmonologist,Inhaler nebulizer lung doctor
+night sweats weight loss cough,TB Specialist,Sputum AFB chest xray DOTS immediately
+raat paseena wazan ghat khansi,TB Specialist,Balgam test xray DOTS turant
+sugar craving excessive thirst urination,Endocrinologist,Blood sugar HbA1c diabetic consult
+shakkar ki craving pyas peshab,Endocrinologist,Sugar test HbA1c diabetic doctor
+tremors sweating palpitations,Endocrinologist/Neurologist,Thyroid function beta blockers
+kanpna paseena dil tez,Endocrinologist/Neurologist,Thyroid test beta blocker
+irregular periods heavy bleeding,Gynecologist,USG hormones gynec consult
+mahvari irregular khoon zyada,Gynecologist,USG hormones gynae doctor
+pregnancy bleeding abdominal pain,Emergency,Immediate gynae emergency USG
+garbh girna pet dard,Emergency,Turanto gynae USG
+infertility irregular cycles,Gynecologist,Ovulation study hormones workup
+bachcha na hona mahvari irregular,Gynecologist,Ovulation hormones test
+skin infection pus cellulitis,Dermatologist,Antibiotics incision drainage
+skin mein infection pus laalpan,Dermatologist,Antibiotics cut drainage
+warts persistent painful,General Physician/Dermatologist,Salicylic acid cryotherapy
+masse dard wale,General Physician/Dermatologist,Acid treatment freeze
+hair loss patchy scalp,Dermatologist,Steroids minoxidil dermatology
+baal jhadna tukde mein,Dermatologist,Steroid minoxidil skin doctor
+nail changes discoloration,General Physician/Dermatologist,Nail clipping fungal culture
+nail badle rang,General Physician/Dermatologist,Nail test fungus
+testicular pain swelling scrotum,Urologist,USG urology emergency rule out torsion
+andaruni sujan dard,Urologist,USG urology emergency
+erectile dysfunction painful,General Physician/Urologist,PDE5 inhibitors urology workup
+otne mein dikkat dard,General Physician/Urologist,Tablet urology test
+memory loss recent events,Neurologist,Cognitive assessment MRI dementia workup
+yaadasht kam recent baatein,Neurologist,Mental test MRI dementia
+depression sleep disturbance appetite loss,Psychiatrist,SSRI sleep hygiene psych consult
+depression neend khana kam,Psychiatrist,Tablet sleep routine psych doctor
+anxiety palpitations sweating,Psychiatrist,Benzos SSRI psych evaluation
+tension dil tez paseena,Psychiatrist,Tablet psych check
+alcohol withdrawal tremors hallucinations,Psychiatrist,Emergency psych detox benzodiazepines
+daru chhodne tremors dekhna,Psychiatrist,Emergency psych injection
+child fever rash non-blanching,Emergency,Meningococcal sepsis protocol
+bachcha bukhar daane na dhule,Emergency,Meningitis protocol
+child breathing fast lethargic,Emergency,Pediatric emergency oxygen sats
+bachcha tez saans kamzori,Emergency,Bachchon ka emergency oxygen
+diabetic ketoacidosis vomiting,Emergency,IV insulin fluids emergency
+sugar coma ulti,Emergency,IV insulin pani emergency
+hypoglycemia sweating confusion,Emergency,Glucose gel IV dextrose
+sugar kam paseena confusion,Emergency,Glucose gel IV sugar
+foreign body eye pain,Opthalmologist,Don't rub irrigation eye specialist
+aankh mein kachra dard,Opthalmologist,Mat khujaye dholo eye doctor
+chemical splash eye,Emergency,15min water flush emergency eye care
+chemical aankh mein,Emergency,15min pani dholo emergency eye
+snake bite local swelling,Emergency,Immobilize ASVP antivenom
+saanp ka kaatna sujan,Emergency,Hilaye na antivenom turant
+dog bite bleeding rabies risk,Emergency,Wash pressure rabies vaccine
+kutta kaat gaya khoon,Emergency,Dhoye pressure vaccine
+burn second degree blisters,Emergency,Cool water burn unit
+jalan phode,Emergency,Thanda pani burn center
+electric shock unconscious,Emergency,CPR if needed emergency
+bijli ka jhatka behosh,Emergency,CPR emergency
+poisoning vomiting seizures,Emergency,Poison control don't induce vomit
+zeher ulti mirgi,Emergency,Poison center mat ugale
+heat stroke no sweating,Emergency,Cool measures IV fluids
+garmi bukhar paseena band,Emergency,Thanda kare IV pani
+hypothermia shivering confusion,Emergency,Warm gradually ER
+thand zyada kampan confusion,Emergency,Dhire thande ER
+asthma exacerbation no relief,Emergency,Nebulizer steroids magnesium
+dama atak gaya inhaler nahi kaam,ER,Nebulizer injection magnesium
+appendicitis right iliac pain,Emergency,Surgical consult NPO
+appendix dard daye neeche,Emergency,Surgery fasting
+cholecystitis right upper pain,Emergency/USG,Surgical consult antibiotics
+pitthe ki thaili dard,Emergency/USG,Surgery antibiotics
+pancreatitis epigastric pain,Emergency,NPO IV fluids surgical
+pet ke upar dard pancreas,Emergency,Fasting IV pani surgery
+bowel obstruction vomiting,Emergency,NG tube surgical emergency
+antri ka band hona ulti,Emergency,Tube surgery emergency
+ectopic pregnancy shoulder pain,Emergency,Gynae surgical emergency
+pet mein garbh kandhe dard,Emergency,Gynae surgery emergency
+pulmonary embolism sudden SOB,Emergency,Oxygen CT PA anticoagulants
+saans ekdum band lung clot,Emergency,Oxygen CT injection
+aortic dissection tearing pain,Emergency,Surgical emergency BP control
+pet phate dard aorta,Emergency,Surgery BP control
+testicular torsion sudden pain,Emergency,Urology surgical emergency
+andaruni ghum gaya tez dard,Emergency,Urology surgery turant

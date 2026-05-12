@@ -915,7 +915,8 @@ def service_hospital_rows(service_id, lat=None, lng=None):
                d.id AS doctor_id, d.doctor_name, d.specialization, d.consultation_fee,
                d.rating AS doctor_rating, s.id AS service_id, s.service_name,
                COALESCE(q.current_queue, 0) AS current_queue,
-               COALESCE(q.estimated_waiting_time, 15) AS estimated_waiting_time
+               COALESCE(q.estimated_waiting_time, 15) AS estimated_waiting_time,
+               COALESCE(h.aayushman_accepted, 0) AS aayushman_accepted
         FROM hospitals h
         JOIN doctors d ON d.hospital_id = h.id
         JOIN doctor_services ds ON ds.doctor_id = d.id
@@ -965,6 +966,7 @@ def service_hospital_rows(service_id, lat=None, lng=None):
                 "estimated_waiting_time": int(row["estimated_waiting_time"] or 0),
                 "distance_km": round(distance, 2) if distance is not None else None,
                 "travel_time_minutes": int(travel_time) if travel_time is not None else None,
+                "aayushman_accepted": bool(row.get("aayushman_accepted", False)),
                 "final_score": round(score, 4),
             }
         )
@@ -1169,8 +1171,8 @@ def hospital_register():
             execute(
                 """
                 INSERT INTO hospitals
-                    (admin_id, hospital_name, address, city, latitude, longitude, contact, opening_time, closing_time, status)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending')
+                    (admin_id, hospital_name, address, city, latitude, longitude, contact, opening_time, closing_time, status, aayushman_accepted)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', %s)
                 """,
                 (
                     admin_id,
@@ -1182,6 +1184,7 @@ def hospital_register():
                     request.form.get("contact", "").strip(),
                     request.form.get("opening_time") or "09:00",
                     request.form.get("closing_time") or "18:00",
+                    1 if request.form.get("aayushman_accepted") else 0,
                 ),
             )
             flash("Hospital registration submitted. Super admin approval is required before patients can find it.", "success")
@@ -1661,7 +1664,7 @@ def hospital_profile():
             """
             UPDATE hospitals
             SET hospital_name = %s, address = %s, city = %s, latitude = %s, longitude = %s,
-                contact = %s, opening_time = %s, closing_time = %s
+                contact = %s, opening_time = %s, closing_time = %s, aayushman_accepted = %s
             WHERE id = %s
             """,
             (
@@ -1673,6 +1676,7 @@ def hospital_profile():
                 request.form.get("contact", "").strip(),
                 request.form.get("opening_time"),
                 request.form.get("closing_time"),
+                1 if request.form.get("aayushman_accepted") else 0,
                 hospital["id"],
             ),
         )
