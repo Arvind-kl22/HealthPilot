@@ -14,13 +14,44 @@
         </div>
         <div class="mb-3">
             <label class="form-label">Location</label>
-            <div id="maple-map" style="height: 300px;"></div>
-            <input type="hidden" id="latitude" name="latitude">
-            <input type="hidden" id="longitude" name="longitude">
+            {% if patient_location %}
+            <div class="alert alert-info">
+                Saved patient location found and loaded on the map automatically. 
+                <a href="{{ url_for('patient_location') }}" class="alert-link">Edit saved location</a> if needed.
+            </div>
+            {% endif %}
+            <div id="locationPickerMap" style="height: 300px;"></div>
+            <div id="locationPickerStatus" class="form-text text-muted mt-2">Select your location on the map or enter coordinates below.</div>
+            <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="useGpsLocation">
+                <i class="bi bi-crosshair"></i> Use Precise Location
+            </button>
+            <input type="hidden" id="locationSource" name="source" value="manual">
+            <div class="row g-3 mt-3">
+                <div class="col-md-6">
+                    <label for="latitude" class="form-label">Latitude</label>
+                    <input type="number" class="form-control" id="latitude" name="latitude" step="any" value="{{ patient_location.lat if patient_location else '' }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="longitude" class="form-label">Longitude</label>
+                    <input type="number" class="form-control" id="longitude" name="longitude" step="any" value="{{ patient_location.lng if patient_location else '' }}" required>
+                </div>
+            </div>
         </div>
         <button type="submit" class="btn btn-danger btn-lg w-100">Request Ambulance</button>
     </form>
 </div>
-<script src="https://maple-maps.com/api/js"></script>
-<script src="{{ url_for('static', filename='js/ambulance_location.js') }}"></script>
+<script>
+window.HealthPilotLocationPicker = {
+    mapplsEnabled: {{ (mappls_web_api_key|length > 0)|tojson }},
+    defaultCenter: [
+        {{ patient_location.lat if patient_location else 28.6139 }},
+        {{ patient_location.lng if patient_location else 77.2090 }}
+    ],
+    existingLocation: {{ patient_location|tojson }}
+};
+</script>
+{% if mappls_web_api_key %}
+<script src="https://sdk.mappls.com/map/sdk/web?v=3.0&access_token={{ mappls_web_api_key }}"></script>
+{% endif %}
+<script src="{{ url_for('static', filename='js/location.js') }}"></script>
 {% endblock %}

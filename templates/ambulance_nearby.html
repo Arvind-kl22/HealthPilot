@@ -3,26 +3,97 @@
 {% block content %}
 <div class="container mt-5">
     <h2 class="mb-4 text-danger"><i class="bi bi-truck"></i> Nearby Available Ambulances</h2>
-    {% if ambulances and ambulances|length > 0 %}
-        <div class="list-group mb-4">
-            {% for amb in ambulances %}
-                <div class="list-group-item">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>Ambulance #{{ amb.id }}</strong> ({{ amb.hospital_name }})<br>
-                            <span class="text-muted">{{ amb.distance }} km away</span>
-                        </div>
-                        <form method="post" action="{{ url_for('ambulance_book', ambulance_id=amb.id) }}">
-                            <input type="hidden" name="request_id" value="{{ amb.request_id }}">
-                            <button type="submit" class="btn btn-success">Book</button>
-                        </form>
-                    </div>
-                </div>
-            {% endfor %}
+    {% if request_id %}
+        <div class="alert alert-info d-flex justify-content-between align-items-center gap-3">
+            <div>Your request <strong>#{{ request_id }}</strong> is pending. Choose a nearby ambulance to send the request directly, or broadcast it to all nearby ambulances.</div>
+            <a href="{{ url_for('ambulance_request_track', request_id=request_id) }}" class="btn btn-outline-info btn-sm">Open tracking page</a>
         </div>
-    {% else %}
-        <div class="alert alert-warning">No ambulances available nearby at the moment.</div>
     {% endif %}
+    
+    <div class="alert alert-primary mb-4">
+        <i class="bi bi-info-circle"></i>
+        <strong>Search radius:</strong> 10 km from your location
+        {% if ambulances and ambulances|length > 0 %}
+            | <strong>Found:</strong> {{ ambulances|length }} available ambulance{{ "s" if ambulances|length != 1 else "" }}
+        {% endif %}
+    </div>
+
+    {% if fallback_distance %}
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i>
+            No ambulances were found within 10 km, so the nearest available ambulances are shown instead.
+        </div>
+    {% endif %}
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body p-0">
+                    <div id="ambulanceNearbyMap" style="min-height: 420px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            {% if ambulances and ambulances|length > 0 %}
+                <div class="list-group">
+                    {% for amb in ambulances %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start gap-3">
+                                <div>
+                                    <h5 class="mb-1">Ambulance #{{ amb.id }}</h5>
+                                    <p class="mb-1 small">
+                                        <strong>Hospital:</strong> {{ amb.hospital_name }}<br>
+                                        <strong>Driver:</strong> {{ amb.driver_name }}<br>
+                                        <strong>Vehicle:</strong> {{ amb.vehicle_number }}<br>
+                                        <strong>Phone:</strong> {{ amb.driver_phone }}<br>
+                                        <strong class="text-success">Distance:</strong> <span class="badge bg-success">{{ amb.distance|round(2) }} km</span>
+                                    </p>
+                                </div>
+                                {% if request_id %}
+                                    <form method="post" action="{{ url_for('ambulance_book', ambulance_id=amb.id) }}">
+                                        <input type="hidden" name="request_id" value="{{ request_id }}">
+                                        <button type="submit" class="btn btn-success">Send Request</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% if request_id %}
+                    <form method="post" action="{{ url_for('ambulance_request_send_to_all', request_id=request_id) }}">
+                        <button type="submit" class="btn btn-primary mt-3 w-100"><i class="bi bi-broadcast"></i> Send request to all {{ ambulances|length }} nearby ambulance{{ "s" if ambulances|length != 1 else "" }}</button>
+                    </form>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-info-circle"></i>
+                    No ambulances available nearby at the moment. Your request is still pending and nearby drivers can accept it when they become available.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
     <a href="/" class="btn btn-secondary">Back to Home</a>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.HealthPilotNearby = {
+    mapplsEnabled: {{ (mappls_web_api_key|length > 0)|tojson }},
+    defaultCenter: [
+        {{ lat if lat is not none else 28.6139 }},
+        {{ lng if lng is not none else 77.2090 }}
+    ],
+    patientLocation: {
+        lat: {{ lat if lat is not none else 'null' }},
+        lng: {{ lng if lng is not none else 'null' }}
+    },
+    ambulances: {{ ambulances|tojson }}
+};
+</script>
+{% if mappls_web_api_key %}
+<script src="https://sdk.mappls.com/map/sdk/web?v=3.0&access_token={{ mappls_web_api_key }}"></script>
+{% endif %}
+<script src="{{ url_for('static', filename='js/ambulance_nearby_map.js') }}"></script>
 {% endblock %}

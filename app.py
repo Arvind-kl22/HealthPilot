@@ -37,6 +37,17 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "healthpilot-dev-secret-change-me")
 socketio = SocketIO(app)
 
+
+def ambulance_driver_required(view):
+    @functools.wraps(view)
+    def wrapped(*args, **kwargs):
+        if not getattr(g, 'current_driver', None):
+            flash("Please log in as an ambulance driver.", "warning")
+            return redirect(url_for("ambulance_login"))
+        return view(*args, **kwargs)
+
+    return wrapped
+
 # Patient books ambulance (assigns ambulance to request)
 @app.route('/ambulance/book/<int:ambulance_id>', methods=['POST'])
 def ambulance_book(ambulance_id):
@@ -55,18 +66,23 @@ def ambulance_book(ambulance_id):
             UPDATE ambulances SET status = 'busy' WHERE id = %s
         """, (ambulance_id,))
         connection.commit()
-        flash('Ambulance booked! Driver will contact you soon.', 'success')
+        flash('Ambulance booked! You can now track it live.', 'success')
     except Exception as e:
         connection.rollback()
         flash(f'Error booking ambulance: {e}', 'danger')
     finally:
         cursor.close()
         connection.close()
-    return redirect(url_for('home'))
+    return redirect(url_for('ambulance_request_track', request_id=request_id))
 
 # Ambulance Driver Dashboard
 @app.route('/ambulance/driver/<int:driver_id>', methods=['GET'])
+@ambulance_driver_required
 def ambulance_dashboard(driver_id):
+    if g.current_driver and g.current_driver['driver_id'] != driver_id:
+        flash('You do not have access to that ambulance dashboard.', 'danger')
+        return redirect(url_for('ambulance_dashboard_redirect'))
+
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
     driver = None
@@ -75,9 +91,11 @@ def ambulance_dashboard(driver_id):
     try:
         # Get driver and ambulance info
         cursor.execute("""
-            SELECT d.id as driver_id, d.name, d.phone, a.id as ambulance_id, a.vehicle_number
+            SELECT d.id as driver_id, d.name, d.phone, a.id as ambulance_id, a.vehicle_number,
+                   a.status, a.latitude, a.longitude, h.hospital_name
             FROM ambulance_drivers d
             JOIN ambulances a ON d.ambulance_id = a.id
+            JOIN hospitals h ON a.hospital_id = h.id
             WHERE d.id = %s
         """, (driver_id,))
         driver = cursor.fetchone()
@@ -96,7 +114,7 @@ def ambulance_dashboard(driver_id):
         # Get current assignment (if any)
         cursor.execute("""
             SELECT * FROM ambulance_requests
-            WHERE assigned_ambulance_id = %s AND status = 'assigned'
+            WHERE assigned_ambulance_id = %s AND status IN ('assigned', 'reached_patient', 'reached_hospital')
             ORDER BY request_time DESC LIMIT 1
         """, (driver['ambulance_id'],))
         current_assignment = cursor.fetchone()
@@ -104,6 +122,200 @@ def ambulance_dashboard(driver_id):
         cursor.close()
         connection.close()
     return render_template('ambulance_dashboard.html', driver=driver, requests=requests, current_assignment=current_assignment)
+
+
+@app.route('/ambulance/dashboard')
+@ambulance_driver_required
+def ambulance_dashboard_redirect():
+    return redirect(url_for('ambulance_dashboard', driver_id=g.current_driver['driver_id']))
+
+
+@app.route('/ambulance/register', methods=['GET', 'POST'])
+def ambulance_register():
+    hospitals = fetch_all("SELECT id, hospital_name, city FROM hospitals WHERE status = 'approved' ORDER BY hospital_name")
+    if request.method == 'POST':
+        hospital_id = request.form.get('hospital_id')
+        driver_name = request.form.get('driver_name', '').strip()
+        phone = request.form.get('phone', '').strip()
+        vehicle_number = request.form.get('vehicle_number', '').strip()
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+
+        if not hospital_id or not driver_name or not vehicle_number or not username or not password:
+            flash('Please fill in all required fields.', 'warning')
+            return render_template('ambulance_register.html', hospitals=hospitals)
+
+        existing = fetch_one('SELECT id FROM ambulance_drivers WHERE username = %s', (username,))
+        if existing:
+            flash('That username is already taken.', 'danger')
+            return render_template('ambulance_register.html', hospitals=hospitals)
+
+        try:
+            ambulance_id = execute(
+                "INSERT INTO ambulances (hospital_id, driver_name, driver_phone, vehicle_number, status) VALUES (%s, %s, %s, %s, 'available')",
+                (hospital_id, driver_name, phone, vehicle_number),
+            )
+            execute(
+                "INSERT INTO ambulance_drivers (ambulance_id, username, password, name, phone) VALUES (%s, %s, %s, %s, %s)",
+                (ambulance_id, username, hash_password(password), driver_name, phone),
+            )
+            flash('Ambulance driver registered successfully. You can now log in.', 'success')
+            return redirect(url_for('ambulance_login'))
+        except Exception as e:
+            flash(f'Error creating ambulance registration: {e}', 'danger')
+            return render_template('ambulance_register.html', hospitals=hospitals)
+
+    return render_template('ambulance_register.html', hospitals=hospitals)
+
+
+@app.route('/ambulance/login', methods=['GET', 'POST'])
+def ambulance_login():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        driver = fetch_one('SELECT * FROM ambulance_drivers WHERE username = %s', (username,))
+        if driver and verify_password(driver['password'], password):
+            session.clear()
+            session['ambulance_driver_id'] = driver['id']
+            flash('Ambulance driver logged in.', 'success')
+            return redirect(url_for('ambulance_dashboard_redirect'))
+        flash('Invalid username or password.', 'danger')
+    return render_template('ambulance_login.html')
+
+
+@app.route('/ambulance/logout')
+def ambulance_logout():
+    session.pop('ambulance_driver_id', None)
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('home'))
+
+
+@app.route('/ambulance/accept/<int:request_id>', methods=['POST'])
+@ambulance_driver_required
+def ambulance_accept(request_id):
+    driver = g.current_driver
+    connection = get_connection()
+    cursor = connection.cursor()
+    try:
+        cursor.execute("SELECT status FROM ambulance_requests WHERE id = %s", (request_id,))
+        row = cursor.fetchone()
+        if not row or row[0] != 'pending':
+            flash('This request is no longer available.', 'warning')
+            return redirect(url_for('ambulance_dashboard_redirect'))
+        cursor.execute(
+            "UPDATE ambulance_requests SET assigned_ambulance_id = %s, status = 'assigned', hospital_id = %s WHERE id = %s",
+            (driver['ambulance_id'], driver['hospital_id'], request_id),
+        )
+        cursor.execute("UPDATE ambulances SET status = 'busy' WHERE id = %s", (driver['ambulance_id'],))
+        connection.commit()
+        flash('Request accepted. Proceed to the patient location.', 'success')
+    except Exception as e:
+        connection.rollback()
+        flash(f'Error accepting request: {e}', 'danger')
+    finally:
+        cursor.close()
+        connection.close()
+    return redirect(url_for('ambulance_dashboard_redirect'))
+
+
+@app.route('/ambulance/request/<int:request_id>/status', methods=['POST'])
+@ambulance_driver_required
+def ambulance_update_request_status(request_id):
+    next_status = request.form.get('next_status')
+    valid_updates = {
+        'reached_patient': 'assigned',
+        'reached_hospital': 'reached_patient',
+        'completed': 'reached_hospital'
+    }
+    if next_status not in valid_updates:
+        flash('Invalid status update.', 'danger')
+        return redirect(url_for('ambulance_dashboard_redirect'))
+
+    driver = g.current_driver
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            "SELECT id, status, assigned_ambulance_id FROM ambulance_requests WHERE id = %s",
+            (request_id,)
+        )
+        request_row = cursor.fetchone()
+        if not request_row or request_row['assigned_ambulance_id'] != driver['ambulance_id']:
+            flash('Request not found or not assigned to you.', 'warning')
+            return redirect(url_for('ambulance_dashboard_redirect'))
+        if request_row['status'] != valid_updates[next_status]:
+            flash('This status cannot be updated from the current state.', 'warning')
+            return redirect(url_for('ambulance_dashboard_redirect'))
+
+        cursor.execute(
+            "UPDATE ambulance_requests SET status = %s WHERE id = %s",
+            (next_status, request_id)
+        )
+        if next_status == 'completed':
+            cursor.execute(
+                "UPDATE ambulances SET status = 'available' WHERE id = %s",
+                (driver['ambulance_id'],)
+            )
+        connection.commit()
+        flash('Booking status updated.', 'success')
+    except Exception as e:
+        connection.rollback()
+        flash(f'Error updating booking status: {e}', 'danger')
+    finally:
+        cursor.close()
+        connection.close()
+    return redirect(url_for('ambulance_dashboard_redirect'))
+
+
+@app.route('/ambulance/dashboard/status')
+@ambulance_driver_required
+def ambulance_dashboard_status():
+    driver = g.current_driver
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            "SELECT a.latitude, a.longitude, a.status, a.vehicle_number, a.hospital_id \n"
+            "FROM ambulance_drivers d \n"
+            "JOIN ambulances a ON d.ambulance_id = a.id \n"
+            "WHERE d.id = %s",
+            (driver['driver_id'],),
+        )
+        ambulance = cursor.fetchone() or {}
+        cursor.execute(
+            "SELECT patient_name, latitude, longitude, status \n"
+            "FROM ambulance_requests \n"
+            "WHERE assigned_ambulance_id = %s AND status IN ('assigned', 'reached_patient', 'reached_hospital') \n"
+            "ORDER BY request_time DESC LIMIT 1",
+            (driver['ambulance_id'],),
+        )
+        assignment = cursor.fetchone()
+
+        if ambulance.get('status') == 'busy' and assignment is None:
+            cursor.execute(
+                "UPDATE ambulances SET status = 'available' WHERE id = %s",
+                (driver['ambulance_id'],),
+            )
+            connection.commit()
+            ambulance['status'] = 'available'
+
+        return jsonify({
+            'driver': {
+                'lat': ambulance.get('latitude'),
+                'lng': ambulance.get('longitude'),
+                'status': ambulance.get('status'),
+                'vehicle_number': ambulance.get('vehicle_number'),
+            },
+            'assignment': assignment and {
+                'patient_name': assignment['patient_name'],
+                'lat': assignment['latitude'],
+                'lng': assignment['longitude'],
+                'status': assignment['status'],
+            },
+        })
+    finally:
+        cursor.close()
+        connection.close()
 
 
 # Emergency Ambulance Request (no login required)
@@ -123,6 +335,7 @@ def ambulance_request():
                 INSERT INTO ambulance_requests (patient_name, mobile_number, latitude, longitude, request_time, status)
                 VALUES (%s, %s, %s, %s, %s, 'pending')
             """, (patient_name, mobile_number, latitude, longitude, request_time))
+            request_id = cursor.lastrowid
             connection.commit()
         except Exception as e:
             connection.rollback()
@@ -131,8 +344,8 @@ def ambulance_request():
         finally:
             cursor.close()
             connection.close()
-        flash('Ambulance request submitted! Showing nearby ambulances...', 'success')
-        return redirect(url_for('ambulance_nearby', lat=latitude, lng=longitude))
+        flash('Ambulance request submitted! Select a nearby ambulance to send the request or broadcast to all nearby ambulances.', 'success')
+        return redirect(url_for('ambulance_nearby', lat=latitude, lng=longitude, request_id=request_id))
     return render_template('ambulance_request.html')
 
 # Show nearby ambulances and hospitals
@@ -140,7 +353,9 @@ def ambulance_request():
 def ambulance_nearby():
     lat = request.args.get('lat', type=float)
     lng = request.args.get('lng', type=float)
+    request_id = request.args.get('request_id', type=int)
     ambulances = []
+    fallback_distance = False
     if lat is not None and lng is not None:
         try:
             connection = get_connection()
@@ -157,12 +372,30 @@ def ambulance_nearby():
                 FROM ambulances a
                 JOIN hospitals h ON a.hospital_id = h.id
                 WHERE a.status = 'available' AND a.latitude IS NOT NULL AND a.longitude IS NOT NULL
-                HAVING distance < 10
+                HAVING distance <= 10
                 ORDER BY distance ASC
                 LIMIT 10
             '''
             cursor.execute(query, (lat, lng, lat))
             ambulances = cursor.fetchall()
+            if not ambulances:
+                fallback_distance = True
+                fallback_query = '''
+                    SELECT a.id, a.driver_name, a.driver_phone, a.vehicle_number, a.latitude, a.longitude, a.status,
+                           h.hospital_name,
+                           (6371 * ACOS(
+                               COS(RADIANS(%s)) * COS(RADIANS(a.latitude)) *
+                               COS(RADIANS(a.longitude) - RADIANS(%s)) +
+                               SIN(RADIANS(%s)) * SIN(RADIANS(a.latitude))
+                           )) AS distance
+                    FROM ambulances a
+                    JOIN hospitals h ON a.hospital_id = h.id
+                    WHERE a.status = 'available' AND a.latitude IS NOT NULL AND a.longitude IS NOT NULL
+                    ORDER BY distance ASC
+                    LIMIT 10
+                '''
+                cursor.execute(fallback_query, (lat, lng, lat))
+                ambulances = cursor.fetchall()
         except Exception as e:
             flash(f"Error fetching ambulances: {e}", "danger")
         finally:
@@ -170,7 +403,103 @@ def ambulance_nearby():
                 cursor.close()
             if 'connection' in locals():
                 connection.close()
-    return render_template('ambulance_nearby.html', ambulances=ambulances, lat=lat, lng=lng)
+    return render_template('ambulance_nearby.html', ambulances=ambulances, lat=lat, lng=lng, request_id=request_id, fallback_distance=fallback_distance)
+
+@app.route('/ambulance/request/send_all/<int:request_id>', methods=['POST'])
+def ambulance_request_send_to_all(request_id):
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
+    request_row = None
+    try:
+        cursor.execute(
+            "SELECT id, status, assigned_ambulance_id, latitude, longitude FROM ambulance_requests WHERE id = %s",
+            (request_id,),
+        )
+        request_row = cursor.fetchone()
+        if not request_row:
+            flash('Ambulance request not found.', 'danger')
+            return redirect(url_for('ambulance_request'))
+        if request_row['assigned_ambulance_id'] is not None or request_row['status'] != 'pending':
+            cursor.execute(
+                "UPDATE ambulance_requests SET assigned_ambulance_id = NULL, status = 'pending' WHERE id = %s",
+                (request_id,),
+            )
+            connection.commit()
+            flash('Request broadcast to all nearby ambulances.', 'success')
+        else:
+            flash('Request is already pending and available to nearby ambulances.', 'info')
+    except Exception as e:
+        connection.rollback()
+        flash(f'Error broadcasting request: {e}', 'danger')
+    finally:
+        cursor.close()
+        connection.close()
+
+    return redirect(url_for('ambulance_request_track', request_id=request_id))
+
+@app.route('/ambulance/request/<int:request_id>/track')
+def ambulance_request_track(request_id):
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            """
+            SELECT r.id, r.patient_name, r.mobile_number, r.latitude AS patient_lat, r.longitude AS patient_lng,
+                   r.status, r.assigned_ambulance_id,
+                   a.latitude AS ambulance_lat, a.longitude AS ambulance_lng, a.vehicle_number,
+                   h.hospital_name
+            FROM ambulance_requests r
+            LEFT JOIN ambulances a ON r.assigned_ambulance_id = a.id
+            LEFT JOIN hospitals h ON a.hospital_id = h.id
+            WHERE r.id = %s
+            """,
+            (request_id,),
+        )
+        request_data = cursor.fetchone()
+        if not request_data:
+            flash('Ambulance request not found.', 'danger')
+            return redirect(url_for('ambulance_request'))
+    finally:
+        cursor.close()
+        connection.close()
+
+    return render_template('ambulance_request_track.html', request_data=request_data)
+
+@app.route('/api/ambulance/request/<int:request_id>/status')
+def api_ambulance_request_status(request_id):
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            """
+            SELECT r.id, r.status, r.patient_name, r.mobile_number, r.latitude AS patient_lat, r.longitude AS patient_lng,
+                   r.assigned_ambulance_id,
+                   a.latitude AS ambulance_lat, a.longitude AS ambulance_lng, a.vehicle_number,
+                   h.hospital_name
+            FROM ambulance_requests r
+            LEFT JOIN ambulances a ON r.assigned_ambulance_id = a.id
+            LEFT JOIN hospitals h ON a.hospital_id = h.id
+            WHERE r.id = %s
+            """,
+            (request_id,),
+        )
+        request_data = cursor.fetchone()
+        if not request_data:
+            return jsonify({'error': 'Request not found.'}), 404
+        return jsonify({
+            'id': request_data['id'],
+            'status': request_data['status'],
+            'patient_lat': request_data['patient_lat'],
+            'patient_lng': request_data['patient_lng'],
+            'assigned_ambulance_id': request_data['assigned_ambulance_id'],
+            'ambulance_lat': request_data['ambulance_lat'],
+            'ambulance_lng': request_data['ambulance_lng'],
+            'vehicle_number': request_data['vehicle_number'],
+            'hospital_name': request_data['hospital_name'],
+        })
+    finally:
+        cursor.close()
+        connection.close()
 
 # --- Real-time tracking and notifications ---
 # Driver updates ambulance location (called from driver app/dashboard)
@@ -193,10 +522,17 @@ def ambulance_update_location():
             'latitude': latitude,
             'longitude': longitude
         }, room=f"ambulance_{ambulance_id}")
+        flash('Ambulance location updated successfully.', 'success')
+    except Exception as e:
+        connection.rollback()
+        flash(f'Error updating ambulance location: {e}', 'danger')
     finally:
         cursor.close()
         connection.close()
-    return ('', 204)
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return ('', 204)
+    return redirect(url_for('ambulance_dashboard_redirect'))
 
 # Patient/driver join ambulance room for live updates
 @socketio.on('join_ambulance_room')
@@ -429,15 +765,32 @@ def default_dashboard(role):
 @app.before_request
 def load_current_user():
     g.user = None
+    g.current_driver = None
     user_id = session.get("user_id")
     if user_id:
         g.user = fetch_one("SELECT id, name, email, role, phone FROM users WHERE id = %s", (user_id,))
+
+    driver_id = session.get("ambulance_driver_id")
+    if driver_id:
+        g.current_driver = fetch_one(
+            """
+            SELECT d.id AS driver_id, d.username, d.name, d.phone, d.ambulance_id,
+                   a.vehicle_number, a.status AS ambulance_status, a.latitude, a.longitude,
+                   a.hospital_id, h.hospital_name
+            FROM ambulance_drivers d
+            JOIN ambulances a ON d.ambulance_id = a.id
+            JOIN hospitals h ON a.hospital_id = h.id
+            WHERE d.id = %s
+            """,
+            (driver_id,),
+        )
 
 
 @app.context_processor
 def inject_globals():
     return {
         "current_user": g.get("user"),
+        "current_driver": g.get("current_driver"),
         "today": dt.date.today().isoformat(),
         "mappls_web_api_key": MAPPLS_WEB_API_KEY,
         "patient_location": get_patient_location(),
@@ -968,7 +1321,6 @@ def hospitals_api():
 
 
 @app.route("/api/mappls/route")
-@role_required("patient")
 def mappls_route_api():
     if not MAPPLS_REST_API_KEY:
         return jsonify({"error": "MAPPLS_API_KEY or MAPPLS_REST_API_KEY is not configured."}), 400

@@ -8,8 +8,21 @@ document.addEventListener('DOMContentLoaded', function () {
         zoom: 14
     });
 
-    // Try to get browser geolocation
-    if (navigator.geolocation) {
+    var latInput = document.getElementById('latitude');
+    var lngInput = document.getElementById('longitude');
+    var initialLat = parseFloat(latInput.value);
+    var initialLng = parseFloat(lngInput.value);
+
+    // Add marker for manual adjustment
+    var marker = map.addMarker({
+        position: map.getCenter(),
+        draggable: true
+    });
+
+    if (!isNaN(initialLat) && !isNaN(initialLng)) {
+        map.setCenter({ lat: initialLat, lng: initialLng });
+        setLatLng(initialLat, initialLng);
+    } else if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function (position) {
             var lat = position.coords.latitude;
             var lng = position.coords.longitude;
@@ -17,12 +30,6 @@ document.addEventListener('DOMContentLoaded', function () {
             setLatLng(lat, lng);
         });
     }
-
-    // Add marker for manual adjustment
-    var marker = map.addMarker({
-        position: map.getCenter(),
-        draggable: true
-    });
 
     marker.on('dragend', function (e) {
         var pos = marker.getPosition();

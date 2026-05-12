@@ -21,7 +21,9 @@
         </button>
         <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                {% if current_user and current_user.role == 'patient' %}
+                {% if current_driver %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('ambulance_dashboard_redirect') }}"><i class="bi bi-speedometer2"></i> Ambulance Dashboard</a></li>
+                {% elif current_user and current_user.role == 'patient' %}
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('patient_dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('symptom_input') }}"><i class="bi bi-stars"></i> Symptoms</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('patient_location') }}"><i class="bi bi-geo-alt"></i> Location</a></li>
@@ -38,11 +40,15 @@
                 {% endif %}
             </ul>
             <div class="d-flex align-items-lg-center gap-2">
-                {% if current_user %}
+                {% if current_driver %}
+                    <span class="small text-muted">{{ current_driver.name }}</span>
+                    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('ambulance_logout') }}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                {% elif current_user %}
                     <span class="small text-muted">{{ current_user.name }}</span>
                     <a class="btn btn-outline-primary btn-sm" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right"></i> Logout</a>
                 {% else %}
                     <a class="btn btn-outline-primary btn-sm" href="{{ url_for('patient_login') }}"><i class="bi bi-person"></i> Patient</a>
+                    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('ambulance_login') }}"><i class="bi bi-truck"></i> Ambulance</a>
                     <a class="btn btn-primary btn-sm" href="{{ url_for('hospital_login') }}"><i class="bi bi-hospital"></i> Hospital</a>
                 {% endif %}
             </div>

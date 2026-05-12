@@ -4,7 +4,67 @@
 <div class="container mt-5">
     <h2 class="mb-4 text-primary"><i class="bi bi-truck"></i> Ambulance Driver Dashboard</h2>
     <div class="mb-4">
-        <strong>Welcome, {{ driver.name }} ({{ driver.vehicle_number }})</strong>
+        <strong>Welcome, {{ driver.name }} ({{ driver.vehicle_number }})</strong><br>
+        <span class="text-muted">Hospital: {{ driver.hospital_name if driver.hospital_name else 'Unknown' }}</span><br>
+        <span class="text-muted">Status: {{ driver.status|capitalize if driver.status else 'Unknown' }}</span>
+    </div>
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <div class="card p-3 h-100">
+                <h5>Live Ambulance Location</h5>
+                <div id="ambulanceDashboardMap" style="height: 320px; min-height: 320px; border-radius: 0.75rem; overflow: hidden; background: #f8f9fa;"></div>
+                {% if not mappls_web_api_key %}
+                    <div class="alert alert-warning mt-3">Mappls API key is not configured. The live map will show once MAPPLS_API_KEY is set.</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card p-3 mb-4">
+                <h5>Ambulance Location</h5>
+                <p class="mb-2">
+                    <strong>Latitude:</strong> {{ driver.latitude or 'N/A' }}<br>
+                    <strong>Longitude:</strong> {{ driver.longitude or 'N/A' }}
+                </p>
+                <form method="post" action="{{ url_for('ambulance_update_location') }}" class="row g-2 align-items-end" id="ambulanceLocationForm">
+                    <input type="hidden" name="ambulance_id" value="{{ driver.ambulance_id }}">
+                    <div class="col-12">
+                        <button type="button" class="btn btn-outline-secondary w-100 mb-2" id="detectLocationButton">
+                            <i class="bi bi-geo-alt"></i> Use Current Location
+                        </button>
+                        <div id="locationDetectStatus" class="small text-muted">Tap to detect your current GPS location. You can also click the live map to pin the exact point.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="latitude">Latitude</label>
+                        <input class="form-control" type="number" step="any" id="latitude" name="latitude" value="{{ driver.latitude or '' }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="longitude">Longitude</label>
+                        <input class="form-control" type="number" step="any" id="longitude" name="longitude" value="{{ driver.longitude or '' }}" required>
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-primary w-100" type="submit">Update Location</button>
+                    </div>
+                </form>
+            </div>
+            {% if current_assignment %}
+            <div class="card p-3">
+                <h5>Current Assignment</h5>
+                <p class="mb-2"><strong>Patient:</strong> {{ current_assignment.patient_name }}</p>
+                <p class="mb-2"><strong>Location:</strong> {{ current_assignment.latitude }}, {{ current_assignment.longitude }}</p>
+                <p class="mb-2"><strong>Stage:</strong> <span class="badge bg-info text-dark">{{ current_assignment.status | replace('_', ' ') | title }}</span></p>
+                <a class="btn btn-outline-secondary w-100 mb-2" href="https://mappls.com/direction?places={{ current_assignment.latitude }},{{ current_assignment.longitude }},Patient;{{ driver.latitude }},{{ driver.longitude }},Ambulance" target="_blank">Open Navigation</a>
+                <form method="post" action="{{ url_for('ambulance_update_request_status', request_id=current_assignment.id) }}">
+                    {% if current_assignment.status == 'assigned' %}
+                        <button type="submit" name="next_status" value="reached_patient" class="btn btn-warning w-100">Reached Patient Location</button>
+                    {% elif current_assignment.status == 'reached_patient' %}
+                        <button type="submit" name="next_status" value="reached_hospital" class="btn btn-primary w-100">Reached Hospital</button>
+                    {% elif current_assignment.status == 'reached_hospital' %}
+                        <button type="submit" name="next_status" value="completed" class="btn btn-success w-100">Complete Ride</button>
+                    {% endif %}
+                </form>
+            </div>
+            {% endif %}
+        </div>
     </div>
     <h4>Incoming Requests</h4>
     {% if requests and requests|length > 0 %}
@@ -41,4 +101,29 @@
         <div class="alert alert-secondary">No active assignment.</div>
     {% endif %}
 </div>
+{% endblock %}{% block scripts %}
+<script>
+window.HealthPilotAmbulanceDashboard = {
+    mapplsEnabled: {{ (mappls_web_api_key|length > 0)|tojson }},
+    defaultCenter: [
+        {{ driver.latitude or 28.6139 }},
+        {{ driver.longitude or 77.2090 }}
+    ],
+    ambulanceLocation: {
+        lat: {{ driver.latitude or 'null' }},
+        lng: {{ driver.longitude or 'null' }},
+        vehicle_number: {{ driver.vehicle_number|tojson }},
+        status: {{ driver.status|default('unknown')|tojson }}
+    },
+    assignmentLocation: {% if current_assignment %}{
+        lat: {{ current_assignment.latitude }},
+        lng: {{ current_assignment.longitude }},
+        patient_name: {{ current_assignment.patient_name|tojson }}
+    }{% else %}null{% endif %}
+};
+</script>
+{% if mappls_web_api_key %}
+<script src="https://sdk.mappls.com/map/sdk/web?v=3.0&access_token={{ mappls_web_api_key }}"></script>
+{% endif %}
+<script src="{{ url_for('static', filename='js/ambulance_dashboard.js') }}"></script>
 {% endblock %}

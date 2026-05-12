@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Ambulance Driver Register | HealthPilot{% endblock %}
+{% block content %}
+<section class="section-pad">
+    <div class="container">
+        <div class="form-shell wide-form">
+            <span class="section-kicker"><i class="bi bi-truck"></i> Ambulance onboarding</span>
+            <h1>Register Ambulance Driver</h1>
+            <p class="text-muted">Register your ambulance vehicle and driver profile under an approved hospital.</p>
+            {% if not hospitals %}
+                <div class="alert alert-warning">No approved hospitals are available yet. Please contact the hospital administration or try again later.</div>
+            {% endif %}
+            <form method="post" class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="driver_name">Driver name</label>
+                    <input class="form-control" id="driver_name" name="driver_name" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="phone">Driver phone</label>
+                    <input class="form-control" id="phone" name="phone" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="vehicle_number">Vehicle number</label>
+                    <input class="form-control" id="vehicle_number" name="vehicle_number" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="username">Username</label>
+                    <input class="form-control" id="username" name="username" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="password">Password</label>
+                    <input class="form-control" type="password" id="password" name="password" minlength="6" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="hospital_id">Hospital</label>
+                    <select class="form-select" id="hospital_id" name="hospital_id" required {% if not hospitals %}disabled{% endif %}>
+                        <option value="">Select a hospital</option>
+                        {% for hospital in hospitals %}
+                            <option value="{{ hospital.id }}">{{ hospital.hospital_name }} - {{ hospital.city }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button class="btn btn-primary" type="submit" {% if not hospitals %}disabled{% endif %}><i class="bi bi-send"></i> Register Ambulance</button>
+                    <a class="btn btn-outline-primary" href="{{ url_for('ambulance_login') }}">Already registered? Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

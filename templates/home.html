@@ -12,8 +12,12 @@
                 {% if current_user and current_user.role == 'patient' %}
                     <a class="btn btn-light btn-lg" href="{{ url_for('symptom_input') }}"><i class="bi bi-stars"></i> Find Care</a>
                     <a class="btn btn-outline-light btn-lg" href="{{ url_for('patient_location') }}"><i class="bi bi-geo-alt"></i> Set Location</a>
+                {% elif current_driver %}
+                    <a class="btn btn-light btn-lg" href="{{ url_for('ambulance_dashboard_redirect') }}"><i class="bi bi-speedometer2"></i> Ambulance Dashboard</a>
                 {% else %}
                     <a class="btn btn-light btn-lg" href="{{ url_for('patient_login') }}"><i class="bi bi-person"></i> Patient Login</a>
+                    <a class="btn btn-outline-light btn-lg" href="{{ url_for('ambulance_login') }}"><i class="bi bi-truck"></i> Ambulance Login</a>
+                    <a class="btn btn-outline-light btn-lg" href="{{ url_for('ambulance_register') }}"><i class="bi bi-truck"></i> Register Ambulance</a>
                     <a class="btn btn-outline-light btn-lg" href="{{ url_for('hospital_register') }}"><i class="bi bi-building-add"></i> Register Hospital</a>
                 {% endif %}
             </div>
