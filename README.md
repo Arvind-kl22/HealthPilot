@@ -9,14 +9,36 @@ HealthPilot is an AI-based healthcare service platform designed to connect patie
 - **Queue Comparison**: Allows patients to compare hospitals based on waiting times, ratings, and distance.
 - **Appointment Booking**: Simplifies the process of booking appointments with hospitals.
 - **Route Navigation**: Provides navigation to the selected hospital using Mappls APIs.
+- **Ambulance Management**: Real-time ambulance booking with nearby search, live tracking, and driver management.
 - **Admin Dashboard**: Allows administrators to monitor hospital performance and approve new hospitals.
+
+## Ambulance Management System
+
+HealthPilot includes a comprehensive ambulance management system with the following features:
+
+- **Nearby Ambulance Search**: Patients can search for ambulances from nearby hospitals, sorted by distance using Haversine formula.
+- **Flexible Booking Options**: Choose specific ambulances or broadcast requests to all ambulances within 10km radius.
+- **Interactive Maps**: Visual representation of patient and ambulance locations using Mappls API.
+- **Real-time Tracking**: Live location updates and route visualization after ambulance acceptance.
+- **Driver Management**: Ambulance drivers can accept/reject requests and update their status.
+- **Status Management**: Automatic status reset to prevent ambulances from being stuck in "busy" state.
+
+### Ambulance Workflow
+
+1. Patient requests ambulance from nearby page
+2. System displays available ambulances sorted by distance
+3. Patient can book specific ambulance or broadcast to all
+4. Drivers receive notifications and can accept requests
+5. Patient gets live tracking with route visualization
+6. Ambulance status updates throughout the process
 
 ## Project Structure
 
 - **Backend**: Flask-based backend for handling requests and managing the database.
 - **AI Service**: Predicts medical services using a trained KNN model and Sentence Transformers.
 - **Frontend**: HTML, CSS, and JavaScript for user interaction, with Chart.js for analytics and Mappls for navigation.
-- **Database**: MySQL database for storing user, hospital, and appointment data.
+- **Ambulance System**: Real-time ambulance booking with SocketIO for live tracking and Mappls for route visualization.
+- **Database**: MySQL database for storing user, hospital, appointment, and ambulance data.
 
 ## Setup Instructions
 
@@ -47,9 +69,13 @@ HealthPilot is an AI-based healthcare service platform designed to connect patie
 
 4. Configure the database:
    - Update `DB_CONFIG` in `app.py` with your MySQL credentials.
-   - Run the schema script:
+   - Run the main schema script:
      ```bash
-     mysql -u <username> -p < database_name> < database/schema.sql
+     mysql -u <username> -p <database_name> < database/schema.sql
+     ```
+   - Run the ambulance schema script:
+     ```bash
+     mysql -u <username> -p <database_name> < database/ambulance_schema.sql
      ```
 
 5. Train the AI model:
@@ -66,18 +92,20 @@ HealthPilot is an AI-based healthcare service platform designed to connect patie
 
 ## Key Files
 
-- `app.py`: Main Flask application.
+- `app.py`: Main Flask application with ambulance management routes.
 - `ai_service.py`: AI service for symptom analysis and service prediction.
 - `train_model.py`: Script to train the KNN model.
-- `templates/`: HTML templates for the frontend.
-- `static/`: Static assets (CSS, JavaScript, images).
-- `database/schema.sql`: Database schema.
+- `templates/`: HTML templates for the frontend, including ambulance pages.
+- `static/`: Static assets (CSS, JavaScript, images) including ambulance tracking scripts.
+- `database/schema.sql`: Database schema including ambulance tables.
+- `database/ambulance_schema.sql`: Ambulance-specific database schema.
 
 ## Technologies Used
 
-- **Backend**: Flask, MySQL
+- **Backend**: Flask, MySQL, SocketIO
 - **AI**: Sentence Transformers, scikit-learn, pandas
 - **Frontend**: HTML, CSS, JavaScript, Chart.js, Mappls APIs
+- **Real-time Features**: SocketIO for live ambulance tracking
 - **Other**: Joblib for model persistence
 
 ## Contributing

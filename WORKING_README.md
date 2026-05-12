@@ -952,7 +952,54 @@ Browser API:
 
 - Geolocation API
 
-## 28. Why This Tech Stack Is Suitable
+## 28. Ambulance Management System
+
+HealthPilot includes a comprehensive ambulance management system to handle emergency medical transport requests.
+
+### Why Ambulance Management Is Needed
+
+Emergency situations require quick access to ambulance services. The system allows patients to request ambulances, drivers to manage assignments, and real-time tracking for safety and coordination.
+
+### Key Features
+
+- **Patient Ambulance Request**: Patients can submit emergency requests with location details.
+- **Nearby Ambulance Search**: System finds available ambulances within 10 km, sorted by distance.
+- **Selective or Broadcast Booking**: Patients can choose a specific ambulance or send requests to all nearby ambulances.
+- **Live Tracking**: After acceptance, patients can track ambulance location and route in real-time.
+- **Driver Dashboard**: Ambulance drivers have a map-based dashboard to update location, accept requests, and change status.
+- **Real-Time Updates**: Uses SocketIO for live location sharing and status notifications.
+
+### Technical Implementation
+
+#### Database Tables
+
+- `ambulance_requests`: Stores patient requests with location, status, and assigned ambulance.
+- `ambulances`: Stores ambulance details, location, status, and hospital association.
+- `ambulance_drivers`: Links drivers to ambulances with login credentials.
+
+#### Backend Logic (Flask)
+
+- Routes for request submission, nearby search, booking, and tracking.
+- Distance calculation using Haversine formula in MySQL queries.
+- Status updates for requests and ambulances.
+- Integration with Mappls Route API for shortest path calculation.
+
+#### Frontend Components
+
+- Mappls Web JS SDK for displaying maps, markers, and routes.
+- JavaScript polling for live status updates.
+- Bootstrap UI for request forms, ambulance lists, and tracking pages.
+
+#### Real-Time Communication
+
+- SocketIO enables live ambulance location updates and notifications.
+- Patients and drivers receive real-time status changes.
+
+### Why This System Is Important
+
+The ambulance system enhances emergency response by connecting patients directly with nearby medical transport, providing transparency through live tracking, and ensuring efficient assignment through selective or broadcast options.
+
+## 29. Why This Tech Stack Is Suitable
 
 ### Flask
 
@@ -1044,7 +1091,19 @@ The AI model can be improved by adding more symptom examples to the dataset, inc
 
 No. HealthPilot only provides service suggestions and basic first-aid guidance. It does not replace professional medical advice or diagnosis.
 
-## 30. Summary
+### Q16. How does the ambulance management system work?
+
+The ambulance system allows patients to request ambulances from nearby hospitals. It calculates distances using Haversine formula, displays ambulances sorted by distance, and provides options to book specific ambulances or broadcast to all within 10km. Drivers can accept requests, and patients can track live location and route.
+
+### Q17. What technologies are used for real-time ambulance tracking?
+
+SocketIO is used for real-time notifications, while JavaScript polling fetches location updates every 5 seconds. Mappls API draws routes between patient and ambulance locations.
+
+### Q18. How is ambulance status managed?
+
+Ambulance status is stored in the database and updated through API calls. Status resets to "available" when drivers view their dashboard, preventing stuck "busy" states. Only accepted requests change status to "busy".
+
+## 31. Summary
 
 HealthPilot combines:
 
@@ -1055,5 +1114,6 @@ HealthPilot combines:
 - Mappls for maps and routing
 - Chart.js for analytics
 - Sentence Transformer and KNN for AI symptom recommendation
+- SocketIO for real-time ambulance tracking and notifications
 
-The project demonstrates how web development, database systems, AI, APIs, and user-interface design can work together to improve healthcare service access.
+The project demonstrates how web development, database systems, AI, APIs, user-interface design, and real-time communication can work together to improve healthcare service access and emergency response.
