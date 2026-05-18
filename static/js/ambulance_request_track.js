@@ -1,18 +1,37 @@
 (function () {
     const config = window.HealthPilotRequestTrack;
     const mapElement = document.getElementById('ambulanceTrackMap');
+    const mapWrapper = document.getElementById('ambulanceTrackMapWrapper');
+    const pendingState = document.getElementById('trackingPendingState');
     if (!config || !mapElement) {
         return;
     }
+
+    const TRACKABLE_STATUSES = new Set(['assigned', 'reached_patient', 'reached_hospital', 'completed']);
 
     let map = null;
     let patientMarker = null;
     let ambulanceMarker = null;
     let routeLine = null;
     let refreshTimer = null;
+    let trackingEnabled = Boolean(config.trackingEnabled);
 
     function mapplsReady() {
         return Boolean(config.mapplsEnabled && window.mappls && typeof window.mappls.Map === 'function');
+    }
+
+    function shouldTrack(state) {
+        const status = String(state.status || '').toLowerCase();
+        return Boolean(state.assigned_ambulance_id) && TRACKABLE_STATUSES.has(status);
+    }
+
+    function setTrackingVisibility(enabled) {
+        if (mapWrapper) {
+            mapWrapper.classList.toggle('d-none', !enabled);
+        }
+        if (pendingState) {
+            pendingState.classList.toggle('d-none', enabled);
+        }
     }
 
     function createMap() {
@@ -38,6 +57,15 @@
         if (layer && typeof layer.remove === 'function') {
             layer.remove();
         }
+    }
+
+    function clearMapLayers() {
+        removeLayer(patientMarker);
+        removeLayer(ambulanceMarker);
+        removeLayer(routeLine);
+        patientMarker = null;
+        ambulanceMarker = null;
+        routeLine = null;
     }
 
     function addMarker(opts) {
@@ -97,9 +125,7 @@
         if (!map) {
             return;
         }
-        removeLayer(patientMarker);
-        removeLayer(ambulanceMarker);
-        removeLayer(routeLine);
+        clearMapLayers();
 
         const bounds = new mappls.LatLngBounds();
         patientMarker = addMarker({
@@ -109,7 +135,7 @@
         });
         bounds.extend(patientMarker.getPosition());
 
-        if (state.assigned_ambulance_id && Number.isFinite(Number(state.ambulance_lat)) && Number.isFinite(Number(state.ambulance_lng))) {
+        if (Number.isFinite(Number(state.ambulance_lat)) && Number.isFinite(Number(state.ambulance_lng))) {
             ambulanceMarker = addMarker({
                 position: { lat: Number(state.ambulance_lat), lng: Number(state.ambulance_lng) },
                 popupHtml: `<strong>Ambulance #${state.assigned_ambulance_id}</strong><br>${state.hospital_name || 'Hospital'}<br>${state.vehicle_number || 'Vehicle'}`,
@@ -117,10 +143,14 @@
             });
             bounds.extend(ambulanceMarker.getPosition());
             drawRoute(state.ambulance_lat, state.ambulance_lng, state.patient_lat, state.patient_lng);
-            updateStatusMessage('Ambulance assigned and live tracking active. Route is displayed on the map.');
+
+            if (String(state.status || '').toLowerCase() === 'completed') {
+                updateStatusMessage('Ride completed. Displaying last known route and location.');
+            } else {
+                updateStatusMessage('Driver accepted. Live ambulance tracking is active.');
+            }
         } else {
-            map.fitBounds(bounds, { padding: 100, duration: 500 });
-            updateStatusMessage('Waiting for an ambulance to accept the request. Refreshing automatically.');
+            updateStatusMessage('Driver accepted. Waiting for ambulance location update...');
         }
 
         if (bounds && bounds.getCount && bounds.getCount() > 0) {
@@ -140,13 +170,33 @@
             if (statusEl) {
                 statusEl.textContent = statusText;
             }
+
+            const enableTrackingNow = shouldTrack(data);
+            if (!enableTrackingNow) {
+                trackingEnabled = false;
+                setTrackingVisibility(false);
+                clearMapLayers();
+                updateStatusMessage('Waiting for driver acceptance. Live tracking will start automatically after acceptance.');
+                return;
+            }
+
+            if (!trackingEnabled) {
+                trackingEnabled = true;
+                setTrackingVisibility(true);
+            }
+            if (!map) {
+                map = createMap();
+            }
             renderMap(data);
         } catch (error) {
             console.warn('Tracking refresh failed:', error);
         }
     }
 
-    map = createMap();
+    setTrackingVisibility(trackingEnabled);
+    if (trackingEnabled) {
+        map = createMap();
+    }
     refreshRequestStatus();
     refreshTimer = setInterval(refreshRequestStatus, 7000);
 })();

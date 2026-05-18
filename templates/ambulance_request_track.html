@@ -1,11 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Track Ambulance Request #{{ request_data.id }}{% endblock %}
 {% block content %}
+{% set tracking_enabled = request_data.assigned_ambulance_id and request_data.status in ['assigned', 'reached_patient', 'reached_hospital', 'completed'] %}
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="mb-1 text-danger"><i class="bi bi-truck"></i> Track Ambulance Request</h2>
-            <p class="text-muted mb-0">Request #{{ request_data.id }} — current status: <strong id="requestStatus">{{ request_data.status|replace('_', ' ')|title }}</strong></p>
+            <p class="text-muted mb-0">
+                Request #{{ request_data.id }} - current status:
+                <strong id="requestStatus">{{ request_data.status|replace('_', ' ')|title }}</strong>
+            </p>
         </div>
         <a href="{{ url_for('ambulance_request') }}" class="btn btn-secondary">New Request</a>
     </div>
@@ -19,31 +23,37 @@
                         <strong>Latitude:</strong> {{ request_data.patient_lat }}<br>
                         <strong>Longitude:</strong> {{ request_data.patient_lng }}
                     </p>
-                    <p class="card-text text-muted">Your current ambulance request location is shown on the map.</p>
+                    <p class="card-text text-muted">Your current ambulance request location is shown here.</p>
                 </div>
             </div>
 
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Ambulance Details</h5>
-                    {% if request_data.assigned_ambulance_id %}
+                    {% if tracking_enabled %}
                         <p class="card-text mb-2">
                             <strong>Ambulance ID:</strong> {{ request_data.assigned_ambulance_id }}<br>
                             <strong>Vehicle:</strong> {{ request_data.vehicle_number or 'N/A' }}<br>
                             <strong>Hospital:</strong> {{ request_data.hospital_name or 'N/A' }}
                         </p>
-                        <p class="card-text text-muted">The map will show the ambulance position and route to the patient location.</p>
+                        <p class="card-text text-muted">Live route tracking is active.</p>
+                    {% elif request_data.assigned_ambulance_id %}
+                        <p class="card-text mb-2">
+                            <strong>Requested Ambulance ID:</strong> {{ request_data.assigned_ambulance_id }}<br>
+                            <strong>Status:</strong> Waiting for driver acceptance
+                        </p>
+                        <p class="card-text text-muted">Tracking starts once the driver accepts this request.</p>
                     {% else %}
-                        <p class="card-text">No ambulance has accepted the request yet. Waiting for the nearest ambulance to respond.</p>
+                        <p class="card-text">No ambulance has accepted the request yet. Waiting for nearby ambulances to respond.</p>
                     {% endif %}
                 </div>
             </div>
 
             <div class="alert alert-info" id="trackingMessage">
-                {% if request_data.assigned_ambulance_id %}
+                {% if tracking_enabled %}
                     Tracking active ambulance location. The route refreshes automatically.
                 {% else %}
-                    Waiting for acceptance from nearby ambulances. Keep this page open to track once an ambulance accepts.
+                    Waiting for driver acceptance. Keep this page open to begin live tracking automatically.
                 {% endif %}
             </div>
         </div>
@@ -51,7 +61,14 @@
         <div class="col-lg-7">
             <div class="card h-100">
                 <div class="card-body p-0">
-                    <div id="ambulanceTrackMap" style="min-height: 520px;"></div>
+                    <div id="trackingPendingState" class="{% if tracking_enabled %}d-none{% endif %} p-4 text-center">
+                        <i class="bi bi-hourglass-split fs-1 text-muted"></i>
+                        <h5 class="mt-3 mb-2">Tracking Will Start After Driver Acceptance</h5>
+                        <p class="text-muted mb-0">Once accepted, this section automatically switches to live ambulance tracking.</p>
+                    </div>
+                    <div id="ambulanceTrackMapWrapper" class="{% if not tracking_enabled %}d-none{% endif %}">
+                        <div id="ambulanceTrackMap" style="min-height: 520px;"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -62,24 +79,25 @@
 {% block scripts %}
 <script>
 window.HealthPilotRequestTrack = {
-    mapplsEnabled: {{ (mappls_web_api_key|length > 0)|tojson }},
-    requestId: {{ request_data.id }},
-    requestStatus: {{ request_data.status|tojson }},
+    mapplsEnabled: {{ ((mappls_web_api_key|default('', true)|length) > 0)|tojson }},
+    requestId: {{ request_data.id|int }},
+    trackingEnabled: {{ tracking_enabled|default(false, true)|tojson }},
+    requestStatus: {{ request_data.status|default('pending', true)|tojson }},
     patientLocation: {
-        lat: {{ request_data.patient_lat }},
-        lng: {{ request_data.patient_lng }}
+        lat: {{ request_data.patient_lat|default('null', true) }},
+        lng: {{ request_data.patient_lng|default('null', true) }}
     },
     ambulance: {
-        id: {{ request_data.assigned_ambulance_id or 'null' }},
-        lat: {{ request_data.ambulance_lat if request_data.ambulance_lat is not none else 'null' }},
-        lng: {{ request_data.ambulance_lng if request_data.ambulance_lng is not none else 'null' }},
-        vehicle_number: {{ request_data.vehicle_number|tojson }},
-        hospital_name: {{ request_data.hospital_name|tojson }}
+        id: {{ request_data.assigned_ambulance_id|default('null', true) }},
+        lat: {{ request_data.ambulance_lat|default('null', true) }},
+        lng: {{ request_data.ambulance_lng|default('null', true) }},
+        vehicle_number: {{ request_data.vehicle_number|default('', true)|tojson }},
+        hospital_name: {{ request_data.hospital_name|default('', true)|tojson }}
     }
 };
 </script>
-{% if mappls_web_api_key %}
-<script src="https://sdk.mappls.com/map/sdk/web?v=3.0&access_token={{ mappls_web_api_key }}"></script>
+{% if mappls_web_api_key|default('', true) %}
+<script src="https://sdk.mappls.com/map/sdk/web?v=3.0&access_token={{ mappls_web_api_key|default('', true) }}"></script>
 {% endif %}
 <script src="{{ url_for('static', filename='js/ambulance_request_track.js') }}"></script>
 {% endblock %}

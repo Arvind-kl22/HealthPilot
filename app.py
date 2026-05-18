@@ -48,25 +48,38 @@ def ambulance_driver_required(view):
 
     return wrapped
 
-# Patient books ambulance (assigns ambulance to request)
+# Patient sends request to a specific ambulance.
+# Tracking should start only after driver accepts.
 @app.route('/ambulance/book/<int:ambulance_id>', methods=['POST'])
 def ambulance_book(ambulance_id):
-    request_id = request.form.get('request_id')
+    request_id = request.form.get('request_id', type=int)
+    if not request_id:
+        flash('Invalid ambulance request reference.', 'danger')
+        return redirect(url_for('ambulance_request'))
     connection = get_connection()
-    cursor = connection.cursor()
+    cursor = connection.cursor(dictionary=True)
     try:
-        # Assign ambulance to request
+        cursor.execute(
+            "SELECT id, status FROM ambulance_requests WHERE id = %s",
+            (request_id,),
+        )
+        request_row = cursor.fetchone()
+        if not request_row:
+            flash('Ambulance request not found.', 'danger')
+            return redirect(url_for('ambulance_request'))
+        if request_row['status'] != 'pending':
+            flash('This request is no longer pending.', 'warning')
+            return redirect(url_for('ambulance_request_track', request_id=request_id))
+
+        # Target this request to the selected ambulance but keep it pending
+        # until the driver explicitly accepts.
         cursor.execute("""
             UPDATE ambulance_requests
-            SET assigned_ambulance_id = %s, status = 'assigned'
+            SET assigned_ambulance_id = %s, status = 'pending'
             WHERE id = %s
         """, (ambulance_id, request_id))
-        # Set ambulance status to busy
-        cursor.execute("""
-            UPDATE ambulances SET status = 'busy' WHERE id = %s
-        """, (ambulance_id,))
         connection.commit()
-        flash('Ambulance booked! You can now track it live.', 'success')
+        flash('Request sent to ambulance. Live tracking will start once the driver accepts.', 'success')
     except Exception as e:
         connection.rollback()
         flash(f'Error booking ambulance: {e}', 'danger')
@@ -103,12 +116,13 @@ def ambulance_dashboard(driver_id):
             flash("Driver not found.", "danger")
             return redirect(url_for('home'))
 
-        # Get pending requests for this ambulance
+        # Get pending requests: either broadcast requests or ones targeted to this ambulance.
         cursor.execute("""
             SELECT * FROM ambulance_requests
             WHERE status = 'pending'
+              AND (assigned_ambulance_id IS NULL OR assigned_ambulance_id = %s)
             ORDER BY request_time ASC
-        """)
+        """, (driver['ambulance_id'],))
         requests = cursor.fetchall()
 
         # Get current assignment (if any)
@@ -197,10 +211,17 @@ def ambulance_accept(request_id):
     connection = get_connection()
     cursor = connection.cursor()
     try:
-        cursor.execute("SELECT status FROM ambulance_requests WHERE id = %s", (request_id,))
+        cursor.execute(
+            "SELECT status, assigned_ambulance_id FROM ambulance_requests WHERE id = %s",
+            (request_id,),
+        )
         row = cursor.fetchone()
         if not row or row[0] != 'pending':
             flash('This request is no longer available.', 'warning')
+            return redirect(url_for('ambulance_dashboard_redirect'))
+        requested_ambulance_id = row[1]
+        if requested_ambulance_id is not None and int(requested_ambulance_id) != int(driver['ambulance_id']):
+            flash('This request was sent to another ambulance.', 'warning')
             return redirect(url_for('ambulance_dashboard_redirect'))
         cursor.execute(
             "UPDATE ambulance_requests SET assigned_ambulance_id = %s, status = 'assigned', hospital_id = %s WHERE id = %s",
